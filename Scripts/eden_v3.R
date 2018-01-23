@@ -1,12 +1,13 @@
 #------------------------------------------------------------------------------
 # REPRODUCTION OF EDEN SURFACE INTERPOLATION
-# TRIAL 2: WITH ANISOTROPY ANGLE & RATIO, ETA = 0, RHO = 0
+# TRIAL 2 FROM RUN 2: WITH ANISOTROPY ANGLE & RATIO, ETA = 0, RHO = 0
 # VERSION 1: REPLICATIN OF RBF PYTHON SCRIPT
 # VERSION 2: WITH WCA2A ADDED
-# VERSION 3: ADDING TO V2, 1+ PSEUDO CANAL PTS NORTH OF L67-EXT 
+# VERSION 3: ADDING 1+ PSEUDO CANAL PTS NORTH OF L67-EXT 
 #            ALSO TRYING WITH DIFFERENT DATES
 # VERSION 4: WITH SUBZONE EAST OF L67-EXT ADDED
 # VERSION 5: WITH SOME PSEUDO-CANAL GAGES ADDED TO WCA2A
+# VERSION 6: ADDED WCA3A AS ITS OWN SUBZONE
 #------------------------------------------------------------------------------
 
 library(geospt)
@@ -28,12 +29,15 @@ gage_file <- "E:/altEden/gage_data/extended_median_files/20160514_median_Ex.txt"
 gages <- read.table(gage_file, header = TRUE, sep = "\t", stringsAsFactors = FALSE)
 head(gages)
 
-# additional pseudo-canal gages to keep & add to 'other':
-(canal_other <- gages[gages$FID == "856" | gages$FID == "830"| gages$FID == "772"| gages$FID == "783", ])
-# additional pseudo-canal gages to keep & add to WCA2A:
+# additional pseudo-canal gages to add to subzones:
+# these gages are located on the border of 3A & 3B
+# adding these reduce error on the 3A side
+(canal_wca3a <- gages[gages$FID == "856" | gages$FID == "830"| gages$FID == "772"| gages$FID == "783", ])
+# additional pseudo-canal gages to add to WCA2A
+# because it reduces error in the northern pt
 (canal_wca2a <- gages[gages$FID == "564", ])
 
-# remove pseudo canal boundaries
+# remove all pseudo canal gages
 gages <- gages[gages$EArea != "", ]
   # have to use EArea and not Station because there is a problem with 3 stations that are in here twice
   # but with different names, and the incorrect ones don't have anything in the EArea field
@@ -41,8 +45,9 @@ gages <- gages[gages$EArea != "", ]
 # round median values to integers??
 # no - because it appears that EDEN team only does this for water depth, not water level
 
-# SUBDIVIDE GAGES BY SUBZONE --------------------------------------------------
+# SORT GAGES INTO SUBZONES --------------------------------------------------
 # selection criteria were found in RBFInterpolation.py
+# as well as determined manually by examining output
 
 unique(gages$EArea)
 
@@ -50,9 +55,15 @@ wca1_gages <- gages[gages$EArea == "Water Conservation Area 1" | gages$EArea == 
 wca2b_gages <- gages[gages$EArea == "Water Conservation Area 2B" | gages$EArea == "L38E Canal" & gages$Station != "S7-T", ]
 wca3b_gages <- gages[gages$EArea == "Water Conservation Area 3B" & gages$Station != "S9A-T" & gages$Station != "SITE_69E", ] 
 pw_gages <- gages[gages$EArea == "Pennsuco Wetlands" & gages$Station != "S380-H" & gages$Station != "NWWF", ] 
-wca2a_gages <- gages[gages$EArea == "Water Conservation Area 2A" | gages$Station == "S7-T", ] 
-
-# new subzone east of L67-ext:
+wca2a_gages <- gages[gages$EArea == "Water Conservation Area 2A" | 
+                     gages$Station == "S7-T", ] 
+wca3a_gages <- gages[gages$EArea == "Water Conservation Area 3A" | 
+                     gages$EArea == "Miami Canal" |
+                     gages$EArea == "L28 Canal" |
+                     gages$EArea == "Tamiami Canal" |
+                     gages$Station == "EDEN_6" |
+                     gages$EArea == "L28 Interceptor Canal",]
+# gages for new subzone east of L67-ext:
 l67ext_gages <- gages[gages$Station == "S334-H" | gages$Station == "S333-T" | 
                       gages$Station == "NESRS1" | gages$Station == "NESRS2" |
                       gages$Station == "G-3578" | gages$Station == "G-3577" |
@@ -67,9 +78,9 @@ l67ext_gages <- gages[gages$Station == "S334-H" | gages$Station == "S333-T" |
                       gages$Station == "P33" | gages$Station == "NP202" |
                       gages$Station == "NP203", ]
 
-# 'other' subzone now needs to exclude certain pts from l67ext subzone that could influence it negatively
-# first: create the 'other' subzone as usual
-# the one ifelse command has this part: & gages$Station != "pBCA19+LO1" could try running it that way too
+# 'other' subzone more complicated to sort
+# first: create the 'other' subzone as usual 
+# (the one ifelse command has this part: & gages$Station != "pBCA19+LO1" could try running it that way too)
 other_gages <- gages[gages$EArea != "Water Conservation Area 1" & gages$EArea != "L39 Canal" & 
                      gages$EArea != "L40 Canal"  & gages$EArea != "Water Conservation Area 2B" &
                      gages$EArea != "L38E Canal" & gages$EArea != "Water Conservation Area 3B" & 
@@ -78,13 +89,21 @@ other_gages <- gages[gages$EArea != "Water Conservation Area 1" & gages$EArea !=
                      gages$Station != "S31M-H" & gages$Station != "S380-H" &
                      gages$Station != "NWWF" | gages$Station == "SITE_69E" |
                      gages$Station == "S9A-T", ]
-# second, remove certain gages east of l67-ext
+# second, remove certain gages east of l67-ext that could influence 'other' surface
 other_gages <- other_gages[other_gages$Station != "NESRS1" & other_gages$Station != "NESRS2" &
                            other_gages$Station != "G-3576" & other_gages$Station != "G-3574" &
                            other_gages$Station != "S334-H" & other_gages$Station != "S334-T" &
                            other_gages$Station != "S333-T", ]
-# add pseudo canal gages:
-other_gages <- rbind(other_gages, canal_other)
+# third, remove gages that will be in WCA3A
+other_gages <- other_gages[other_gages$EArea != "Water Conservation Area 3A" &
+                           other_gages$EArea != "Tamiami Canal" & 
+                           other_gages$EArea != "Miami Canal" |
+                           other_gages$Station == "3ASW+", ]
+                             
+                             
+
+# add pseudo canal gages to subzones to reduce error in the regions:
+wca3a_gages <- rbind(wca3a_gages, canal_wca3a)
 wca2a_gages <- rbind(wca2a_gages, canal_wca2a)
 
 
@@ -103,11 +122,13 @@ wca3b <- readOGR(dsn = path.expand("E:/altEden/GIS/EDEN_zones_GIS"),
 pw <- readOGR(dsn = path.expand("E:/altEden/GIS/EDEN_zones_GIS"),
               layer = "EDEN_grid_poly_Jan_10_PW")
 other <- readOGR(dsn = path.expand("E:/altEden/GIS"),
-                 layer = "EDEN_grid_poly_OTHER_noWCA2A_noL67ext")
+                 layer = "EDEN_grid_poly_OTHER_noWCA2A_noL67ext_noWCA3A")
 wca2a <- readOGR(dsn = path.expand("E:/altEden/GIS"),
                  layer = "EDEN_grid_poly_WCA2A")
 l67ext <- readOGR(dsn = path.expand("E:/altEden/GIS"),
                   layer = "EDEN_grid_poly_east_L67ext")
+wca3a <- readOGR(dsn = path.expand("E:/altEden/GIS"),
+                 layer = "EDEN_grid_poly_WCA3A")
 head(wca2a)
 #plot(wca2a)
 
@@ -120,6 +141,7 @@ pw_coords <- pw@data[, c("X_COORD", "Y_COORD")]
 other_coords <- other@data[, c("X_COORD", "Y_COORD")]
 wca2a_coords <- wca2a@data[, c("X_COORD", "Y_COORD")]
 l67ext_coords <- l67ext@data[, c("X_COORD", "Y_COORD")]
+wca3a_coords <- wca3a@data[, c("X_COORD", "Y_COORD")]
 
 ## convert both gages and polygon centroids to anisotropic coords -------------
 
@@ -186,6 +208,14 @@ colnames(l67ext_gages_anis) <- c("x_aniso", "y_aniso")
 colnames(l67ext_anis) <- c("x_aniso", "y_aniso")
 l67ext_gages_anis$MEDIAN <- l67ext_gages$MEDIAN
 
+wca3a_gages_anis <- as.data.frame(coords.aniso(coords = wca3a_gages[, 3:4], 
+                                               aniso.pars = c(350, 31/30)))
+wca3a_anis <- as.data.frame(coords.aniso(coords = wca3a_coords, 
+                                         aniso.pars = c(350, 31/30)))
+colnames(wca3a_gages_anis) <- c("x_aniso", "y_aniso")  
+colnames(wca3a_anis) <- c("x_aniso", "y_aniso")
+wca3a_gages_anis$MEDIAN <- wca3a_gages$MEDIAN
+
 
 ##  perform rbf interpolation -------------------------------------------------
 
@@ -222,7 +252,7 @@ head(wca3b_rbf)
 coordinates(pw_gages_anis) <- ~x_aniso + y_aniso
 proj4string(pw_gages_anis) <- nad_utm
 pw_rbf <- rbf(MEDIAN ~ x_aniso + y_aniso, data = pw_gages_anis, func = "M", 
-                eta = 0, rho = 0, n.neigh = 6, newdata = pw_anis) 
+                eta = 0, rho =0, n.neigh = 6, newdata = pw_anis) 
 pw_rbf <- cbind(pw_coords, pw_rbf$var1.pred)
 colnames(pw_rbf)[3] <- "alt_stage_cm"
 head(pw_rbf)
@@ -253,10 +283,19 @@ l67ext_rbf <- cbind(l67ext_coords, l67ext_rbf$var1.pred)
 colnames(l67ext_rbf)[3] <- "alt_stage_cm"
 head(l67ext_rbf)
 
+
+coordinates(wca3a_gages_anis) <- ~x_aniso + y_aniso
+proj4string(wca3a_gages_anis) <- nad_utm
+wca3a_rbf <- rbf(MEDIAN ~ x_aniso + y_aniso, data = wca3a_gages_anis, func = "M", 
+                 eta = 0, rho = 0, n.neigh = 8, newdata = wca3a_anis) 
+wca3a_rbf <- cbind(wca3a_coords, wca3a_rbf$var1.pred)
+colnames(wca3a_rbf)[3] <- "alt_stage_cm"
+head(wca3a_rbf)
+
 ## combine together & convert to raster ---------------------------------------
 
 alt_eden <- rbind(wca1_rbf, wca2b_rbf, wca3b_rbf, pw_rbf, other_rbf, wca2a_rbf,
-                  l67ext_rbf)
+                  l67ext_rbf, wca3a_rbf)
 
 coordinates(alt_eden) <- ~X_COORD + Y_COORD
 proj4string(alt_eden) <- nad_utm
@@ -292,5 +331,5 @@ diff <- na.omit(getValues(eden_diff))
 sqrt(mean(diff^2))
 
 ## export ---------------------------------------------------------------------
-#writeRaster(alt_eden, "E:/altEden/R_run3/output/altEden_Trial2_20170710_v5.tif")
-#writeRaster(eden_diff, "E:/altEden/R_run3/output/edenDiff_Trial2_20170710_v5.tif")
+#writeRaster(alt_eden, "E:/altEden/R_run3/output/altEden_Trial2_20170710_v6.tif")
+#writeRaster(eden_diff, "E:/altEden/R_run3/output/edenDiff_Trial2_20170710_v6.tif")
