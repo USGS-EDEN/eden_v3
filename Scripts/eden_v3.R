@@ -1,8 +1,8 @@
 #-------------------------------------------------------
 # REPRODUCTION OF EDEN SURFACE INTERPOLATION
 # TRIAL 2: WITH ANISOTROPY ANGLE & RATIO, ETA = 0, RHO = 0
-# VERSION 1: THIS IS A DIRECT INTERPRETATION OF THE PYTHON METHOD
-# (except that eta = 0, because it doesn't change the results in R)
+# VERSION 2: ADDING IN A NEW SUBZONE FOR WCA2A 
+# AND REMOVING THAT AREA FROM THE SUBZONE 'OTHER'
 #-------------------------------------------------------
 
 library(geospt)
@@ -37,17 +37,19 @@ wca2b_gages <- gages[gages$EArea == "Water Conservation Area 2B" | gages$EArea =
 # 3B: would have to add NOT SITE_69E if it apppears in medians file
 wca3b_gages <- gages[gages$EArea == "Water Conservation Area 3B" & gages$Station != "S9A-T", ] 
 # PW: would have to add NOT S380-H and NOT NWWF if they appear in medians file
-pw_gages <- gages[gages$EArea == "Pennsuco Wetlands", ]
+pw_gages <- gages[gages$EArea == "Pennsuco Wetlands", ] 
 # OTHER: would have to add YES to include SITE_69E if it appeared in medians file
 # and NO to L30 Canal, S31M-H, S380-H, NWWF
 # the one ifelse command has this part: & gages$Station != "pBCA19+LO1" could try running it that way too
 other_gages <- gages[gages$EArea != "Water Conservation Area 1" & gages$EArea != "L39 Canal" & 
-                     gages$EArea != "L40 Canal" & gages$EArea != "Water Conservation Area 2B" &
+                     gages$EArea != "L40 Canal"  & gages$EArea != "Water Conservation Area 2B" &
                      gages$EArea != "L38E Canal" & gages$EArea != "Water Conservation Area 3B" & 
-                     gages$EArea != "Pennsuco Wetlands" | 
-                     gages$Station == "S9A-T" | gages$Station == "S7-T"  , ]
+                     gages$EArea != "Pennsuco Wetlands" & gages$EArea != "Water Conservation Area 2A" & 
+                      gages$Station != "S7-T" |
+                     gages$Station == "S9A-T", ]
 
-
+# NEW SUBZONE:
+wca2a_gages <- gages[gages$EArea == "Water Conservation Area 2A" | gages$Station == "S7-T", ] 
 
 # don't have to do this with this file!
 # fix incorrect location of gauge G-3567
@@ -63,10 +65,12 @@ wca3b <- readOGR(dsn = path.expand("E:/altEden/GIS/EDEN_zones_GIS"),
                  layer = "EDEN_grid_poly_Jan_10_WCA3B")
 pw <- readOGR(dsn = path.expand("E:/altEden/GIS/EDEN_zones_GIS"),
               layer = "EDEN_grid_poly_Jan_10_PW")
-other <- readOGR(dsn = path.expand("E:/altEden/GIS/EDEN_zones_GIS"),
-                 layer = "EDENGRID_Jan_10_NO_WCA1_2B_3B_PW")
-head(wca2b)
-plot(pw)
+other <- readOGR(dsn = path.expand("E:/altEden/GIS"),
+                 layer = "EDEN_grid_poly_OTHER_noWCA2A")
+wca2a <- readOGR(dsn = path.expand("E:/altEden/GIS"),
+                 layer = "EDEN_grid_poly_WCA2A")
+head(wca2a)
+plot(wca2a)
 
 ## create dataframes of the polygon centroids ---------------------------------
 
@@ -75,6 +79,7 @@ wca2b_coords <- wca2b@data[, c("X_COORD", "Y_COORD")]
 wca3b_coords <- wca3b@data[, c("X_COORD", "Y_COORD")]
 pw_coords <- pw@data[, c("X_COORD", "Y_COORD")]
 other_coords <- other@data[, c("X_COORD", "Y_COORD")]
+wca2a_coords <- wca2a@data[, c("X_COORD", "Y_COORD")]
 
 ## convert both gages and polygon centroids to anisotropic coords -------------
 
@@ -124,6 +129,14 @@ other_anis <- as.data.frame(coords.aniso(coords = other_coords,
 colnames(other_gages_anis) <- c("x_aniso", "y_aniso")  
 colnames(other_anis) <- c("x_aniso", "y_aniso")
 other_gages_anis$MEDIAN <- other_gages$MEDIAN
+
+wca2a_gages_anis <- as.data.frame(coords.aniso(coords = wca2a_gages[, 3:4], 
+                                               aniso.pars = c(350, 31/30)))
+wca2a_anis <- as.data.frame(coords.aniso(coords = wca2a_coords, 
+                                         aniso.pars = c(350, 31/30)))
+colnames(wca2a_gages_anis) <- c("x_aniso", "y_aniso")  
+colnames(wca2a_anis) <- c("x_aniso", "y_aniso")
+wca2a_gages_anis$MEDIAN <- wca2a_gages$MEDIAN
 
 
 ##  perform rbf interpolation -------------------------------------------------
@@ -175,27 +188,36 @@ other_rbf <- cbind(other_coords, other_rbf$var1.pred)
 colnames(other_rbf)[3] <- "alt_stage_cm"
 head(other_rbf)
 
+
+coordinates(wca2a_gages_anis) <- ~x_aniso + y_aniso
+proj4string(wca2a_gages_anis) <- nad_utm
+wca2a_rbf <- rbf(MEDIAN ~ x_aniso + y_aniso, data = wca2a_gages_anis, func = "M", 
+                 eta = 0, rho = 0, n.neigh = 8, newdata = wca2a_anis) 
+wca2a_rbf <- cbind(wca2a_coords, wca2a_rbf$var1.pred)
+colnames(wca2a_rbf)[3] <- "alt_stage_cm"
+head(wca2a_rbf)
+
 ## combine together & convert to raster ---------------------------------------
 
-alt_eden <- rbind(wca1_rbf, wca2b_rbf, wca3b_rbf, pw_rbf, other_rbf)
+alt_eden <- rbind(wca1_rbf, wca2b_rbf, wca3b_rbf, pw_rbf, other_rbf, wca2a_rbf)
 
 coordinates(alt_eden) <- ~X_COORD + Y_COORD
 proj4string(alt_eden) <- nad_utm
 gridded(alt_eden) <- TRUE
 alt_eden <- raster(alt_eden)
-plot(alt_eden)
+plot(alt_eden, main = "altEDEN")
 
 ## compare with official EDEN surface  ----------------------------------------
 
 eden <- raster("E:/altEden/EDEN_surfaces/2017_q3_v2rt_geotif/20170710_geotif_v2rt/s_20170710_v2rt.tif")
-plot(eden)
+plot(eden, main = "real EDEN")
 
 # compare extent, grid
 alt_eden
 eden
 
 eden_diff <- alt_eden - eden # predicted - actual
-plot(eden_diff)
+plot(eden_diff, main = "altEDEN - real EDEN")
 
 # summary stats - useless but to compare against older output
 cellStats(eden_diff, 'mean')
@@ -206,5 +228,5 @@ diff <- na.omit(getValues(eden_diff))
 sqrt(mean(diff^2))
 
 ## export ---------------------------------------------------------------------
-writeRaster(alt_eden, "E:/altEden/R_run3/output/altEden_Trial2_20170710_v1.tif")
-writeRaster(eden_diff, "E:/altEden/R_run3/output/edenDiff_Trial2_20170710_v1.tif")
+writeRaster(alt_eden, "E:/altEden/R_run3/output/altEden_Trial2_20170710_v2.tif", overwrite = TRUE)
+writeRaster(eden_diff, "E:/altEden/R_run3/output/edenDiff_Trial2_20170710_v2.tif", overwrite = TRUE)
