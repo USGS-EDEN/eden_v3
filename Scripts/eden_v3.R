@@ -1,9 +1,9 @@
-#-------------------------------------------------------
+#------------------------------------------------------------------------------
 # REPRODUCTION OF EDEN SURFACE INTERPOLATION
 # TRIAL 2: WITH ANISOTROPY ANGLE & RATIO, ETA = 0, RHO = 0
-# VERSION 2: ADDING IN A NEW SUBZONE FOR WCA2A 
-# AND REMOVING THAT AREA FROM THE SUBZONE 'OTHER'
-#-------------------------------------------------------
+# VERSION 3: ADDING TO V2, 1+ PSEUDO CANAL PTS NORTH OF L67-EXT 
+# ALSO TRYING WITH DIFFERENT DATES
+#------------------------------------------------------------------------------
 
 library(geospt)
 library(raster)
@@ -14,10 +14,18 @@ nad_utm <- CRS("+proj=utm +zone=17 +datum=NAD83 +units=m +no_defs +ellps=GRS80 +
 
 ## read in stage values at gages ----------------------------------------------
 
-# example of one of the _Ex files that EDENServer.exe creates (Heather sent this to us)
-gages <- read.table("E:/altEden/fromHeather/20170710_median_Ex.txt", 
-                    header = TRUE, sep = "\t", stringsAsFactors = FALSE)
+# import data file of gages with pseudo canal boundaries and EArea field:
+# there are a few different options
+#gage_file <- "E:/altEden/fromHeather/20170710_median_Ex.txt"
+#gage_file <- "E:/altEden/gage_data/extended_median_files/20151112_median_Ex.txt"
+#gage_file <- "E:/altEden/gage_data/extended_median_files/20160102_median_Ex.txt"
+gage_file <- "E:/altEden/gage_data/extended_median_files/20160304_median_Ex.txt"
+#gage_file <- "E:/altEden/gage_data/extended_median_files/20160514_median_Ex.txt"
+gages <- read.table(gage_file, header = TRUE, sep = "\t", stringsAsFactors = FALSE)
 head(gages)
+
+# additional pseudo-canal gage to keep & add to 'other':
+(canal <- gages[gages$FID == "856" | gages$FID == "830"| gages$FID == "772"| gages$FID == "783", ])
 
 # remove pseudo canal boundaries
 gages <- gages[gages$EArea != "", ]
@@ -25,7 +33,7 @@ gages <- gages[gages$EArea != "", ]
   # but with different names, and the incorrect ones don't have anything in the EArea field
 
 # round median values to integers??
-
+# no - because it appears that EDEN team only does this for water depth, not water level
 
 # SUBDIVIDE GAGES BY SUBZONE --------------------------------------------------
 # selection criteria were found in RBFInterpolation.py
@@ -34,19 +42,19 @@ unique(gages$EArea)
 
 wca1_gages <- gages[gages$EArea == "Water Conservation Area 1" | gages$EArea == "L39 Canal" | gages$EArea == "L40 Canal", ]
 wca2b_gages <- gages[gages$EArea == "Water Conservation Area 2B" | gages$EArea == "L38E Canal" & gages$Station != "S7-T", ]
-# 3B: would have to add NOT SITE_69E if it apppears in medians file
-wca3b_gages <- gages[gages$EArea == "Water Conservation Area 3B" & gages$Station != "S9A-T", ] 
-# PW: would have to add NOT S380-H and NOT NWWF if they appear in medians file
-pw_gages <- gages[gages$EArea == "Pennsuco Wetlands", ] 
-# OTHER: would have to add YES to include SITE_69E if it appeared in medians file
-# and NO to L30 Canal, S31M-H, S380-H, NWWF
+wca3b_gages <- gages[gages$EArea == "Water Conservation Area 3B" & gages$Station != "S9A-T" & gages$Station != "SITE_69E", ] 
+pw_gages <- gages[gages$EArea == "Pennsuco Wetlands" & gages$Station != "S380-H" & gages$Station != "NWWF", ] 
 # the one ifelse command has this part: & gages$Station != "pBCA19+LO1" could try running it that way too
 other_gages <- gages[gages$EArea != "Water Conservation Area 1" & gages$EArea != "L39 Canal" & 
                      gages$EArea != "L40 Canal"  & gages$EArea != "Water Conservation Area 2B" &
                      gages$EArea != "L38E Canal" & gages$EArea != "Water Conservation Area 3B" & 
                      gages$EArea != "Pennsuco Wetlands" & gages$EArea != "Water Conservation Area 2A" & 
-                      gages$Station != "S7-T" |
+                     gages$Station != "S7-T" & gages$EArea != "L30 Canal" & 
+                     gages$Station != "S31M-H" & gages$Station != "S380-H" &
+                     gages$Station != "NWWF" | gages$Station == "SITE_69E" |
                      gages$Station == "S9A-T", ]
+# add pseudo canal gage:
+other_gages <- rbind(other_gages, canal)
 
 # NEW SUBZONE:
 wca2a_gages <- gages[gages$EArea == "Water Conservation Area 2A" | gages$Station == "S7-T", ] 
@@ -209,7 +217,14 @@ plot(alt_eden, main = "altEDEN")
 
 ## compare with official EDEN surface  ----------------------------------------
 
-eden <- raster("E:/altEden/EDEN_surfaces/2017_q3_v2rt_geotif/20170710_geotif_v2rt/s_20170710_v2rt.tif")
+# the different eden surface files
+#eden_file <- "E:/altEden/EDEN_surfaces/2017_q3_v2rt_geotif/20170710_geotif_v2rt/s_20170710_v2rt.tif"
+#eden_file <- "E:/altEden/EDEN_surfaces/2015_q4_tiff_v2prov/s_20151112.tif"
+#eden_file <- "E:/altEden/EDEN_surfaces/2016_q1_tiff_v2prov/s_20160102.tif"
+eden_file <- "E:/altEden/EDEN_surfaces/2016_q1_tiff_v2prov/s_20160304.tif"
+#eden_file <- "E:/altEden/EDEN_surfaces/2016_q2_tiff_v2prov/s_20160514.tif"
+
+eden <- raster(eden_file)
 plot(eden, main = "real EDEN")
 
 # compare extent, grid
@@ -217,7 +232,7 @@ alt_eden
 eden
 
 eden_diff <- alt_eden - eden # predicted - actual
-plot(eden_diff, main = "altEDEN - real EDEN")
+plot(eden_diff, main = "altEDEN - real EDEN (cm)")
 
 # summary stats - useless but to compare against older output
 cellStats(eden_diff, 'mean')
@@ -228,5 +243,5 @@ diff <- na.omit(getValues(eden_diff))
 sqrt(mean(diff^2))
 
 ## export ---------------------------------------------------------------------
-writeRaster(alt_eden, "E:/altEden/R_run3/output/altEden_Trial2_20170710_v2.tif", overwrite = TRUE)
-writeRaster(eden_diff, "E:/altEden/R_run3/output/edenDiff_Trial2_20170710_v2.tif", overwrite = TRUE)
+writeRaster(alt_eden, "E:/altEden/R_run3/output/altEden_Trial2_20151112_v3.tif")
+writeRaster(eden_diff, "E:/altEden/R_run3/output/edenDiff_Trial2_20151112_v3.tif")
