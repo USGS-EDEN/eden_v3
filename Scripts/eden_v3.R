@@ -1,10 +1,12 @@
 #------------------------------------------------------------------------------
 # REPRODUCTION OF EDEN SURFACE INTERPOLATION
 # TRIAL 2: WITH ANISOTROPY ANGLE & RATIO, ETA = 0, RHO = 0
+# VERSION 1: REPLICATIN OF RBF PYTHON SCRIPT
 # VERSION 2: WITH WCA2A ADDED
 # VERSION 3: ADDING TO V2, 1+ PSEUDO CANAL PTS NORTH OF L67-EXT 
 #            ALSO TRYING WITH DIFFERENT DATES
 # VERSION 4: WITH SUBZONE EAST OF L67-EXT ADDED
+# VERSION 5: WITH SOME PSEUDO-CANAL GAGES ADDED TO WCA2A
 #------------------------------------------------------------------------------
 
 library(geospt)
@@ -21,13 +23,15 @@ nad_utm <- CRS("+proj=utm +zone=17 +datum=NAD83 +units=m +no_defs +ellps=GRS80 +
 #gage_file <- "E:/altEden/fromHeather/20170710_median_Ex.txt"
 #gage_file <- "E:/altEden/gage_data/extended_median_files/20151112_median_Ex.txt"
 #gage_file <- "E:/altEden/gage_data/extended_median_files/20160102_median_Ex.txt"
-gage_file <- "E:/altEden/gage_data/extended_median_files/20160304_median_Ex.txt"
-#gage_file <- "E:/altEden/gage_data/extended_median_files/20160514_median_Ex.txt"
+#gage_file <- "E:/altEden/gage_data/extended_median_files/20160304_median_Ex.txt"
+gage_file <- "E:/altEden/gage_data/extended_median_files/20160514_median_Ex.txt"
 gages <- read.table(gage_file, header = TRUE, sep = "\t", stringsAsFactors = FALSE)
 head(gages)
 
-# additional pseudo-canal gage to keep & add to 'other':
-(canal <- gages[gages$FID == "856" | gages$FID == "830"| gages$FID == "772"| gages$FID == "783", ])
+# additional pseudo-canal gages to keep & add to 'other':
+(canal_other <- gages[gages$FID == "856" | gages$FID == "830"| gages$FID == "772"| gages$FID == "783", ])
+# additional pseudo-canal gages to keep & add to WCA2A:
+(canal_wca2a <- gages[gages$FID == "564", ])
 
 # remove pseudo canal boundaries
 gages <- gages[gages$EArea != "", ]
@@ -80,7 +84,8 @@ other_gages <- other_gages[other_gages$Station != "NESRS1" & other_gages$Station
                            other_gages$Station != "S334-H" & other_gages$Station != "S334-T" &
                            other_gages$Station != "S333-T", ]
 # add pseudo canal gages:
-other_gages <- rbind(other_gages, canal)
+other_gages <- rbind(other_gages, canal_other)
+wca2a_gages <- rbind(wca2a_gages, canal_wca2a)
 
 
 # don't have to do this with new files?!
@@ -265,8 +270,8 @@ plot(alt_eden, main = "altEDEN")
 #eden_file <- "E:/altEden/EDEN_surfaces/2017_q3_v2rt_geotif/20170710_geotif_v2rt/s_20170710_v2rt.tif"
 #eden_file <- "E:/altEden/EDEN_surfaces/2015_q4_tiff_v2prov/s_20151112.tif"
 #eden_file <- "E:/altEden/EDEN_surfaces/2016_q1_tiff_v2prov/s_20160102.tif"
-eden_file <- "E:/altEden/EDEN_surfaces/2016_q1_tiff_v2prov/s_20160304.tif"
-#eden_file <- "E:/altEden/EDEN_surfaces/2016_q2_tiff_v2prov/s_20160514.tif"
+#eden_file <- "E:/altEden/EDEN_surfaces/2016_q1_tiff_v2prov/s_20160304.tif"
+eden_file <- "E:/altEden/EDEN_surfaces/2016_q2_tiff_v2prov/s_20160514.tif"
 
 eden <- raster(eden_file)
 plot(eden, main = "real EDEN")
@@ -287,5 +292,5 @@ diff <- na.omit(getValues(eden_diff))
 sqrt(mean(diff^2))
 
 ## export ---------------------------------------------------------------------
-#writeRaster(alt_eden, "E:/altEden/R_run3/output/altEden_Trial2_20170710_v4.tif")
-#writeRaster(eden_diff, "E:/altEden/R_run3/output/edenDiff_Trial2_20170710_v4.tif")
+#writeRaster(alt_eden, "E:/altEden/R_run3/output/altEden_Trial2_20170710_v5.tif")
+#writeRaster(eden_diff, "E:/altEden/R_run3/output/edenDiff_Trial2_20170710_v5.tif")
