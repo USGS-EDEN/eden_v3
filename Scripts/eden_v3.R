@@ -4,6 +4,7 @@
 #-------------------------------------------------------
 
 library(geospt)
+#library(dplyr)
 library(raster)
 library(rgdal)
 library(geoR)
@@ -69,130 +70,55 @@ other_gages <- gages[row.names(subgages), ]
 other_gages@data 
 
 ## create dataframes of the polygon centroids ----
+# and change column names to match the gage spdf
+# which is required for rbf
 
 wca1_coords <- wca1@data[, c("X_COORD", "Y_COORD")]
+colnames(wca1_coords) <- c("X", "Y")
 wca2b_coords <- wca2b@data[, c("X_COORD", "Y_COORD")]
+colnames(wca2b_coords) <- c("X", "Y")
 wca3b_coords <- wca3b@data[, c("X_COORD", "Y_COORD")]
+colnames(wca3b_coords) <- c("X", "Y")
 pw_coords <- pw@data[, c("X_COORD", "Y_COORD")]
+colnames(pw_coords) <- c("X", "Y")
 other_coords <- other@data[, c("X_COORD", "Y_COORD")]
+colnames(other_coords) <- c("X", "Y")
 
-## convert to anisotropic coords ----
+##  perform rbf interpolation ----
 
-# convert both the gage & centroids coordinates
-# rename coordinates column names
-# add stage values back to gage df
-wca1_gages_anis <- as.data.frame(coords.aniso(coords = wca1_gages@coords, 
-                                aniso.pars = c(350, 31/30)))
-wca1_anis <- as.data.frame(coords.aniso(coords = wca1_coords, 
-                                        aniso.pars = c(350, 31/30)))
-colnames(wca1_gages_anis) <- c("x_aniso", "y_aniso")  
-colnames(wca1_anis) <- c("x_aniso", "y_aniso") 
-wca1_gages_anis$stage_cm <- wca1_gages$stage_cm
-
-
-wca2b_gages_anis <- as.data.frame(coords.aniso(coords = wca2b_gages@coords, 
-                                               aniso.pars = c(350, 31/30)))
-wca2b_anis <- as.data.frame(coords.aniso(coords = wca2b_coords, 
-                                         aniso.pars = c(350, 31/30)))
-colnames(wca2b_gages_anis) <- c("x_aniso", "y_aniso")  
-colnames(wca2b_anis) <- c("x_aniso", "y_aniso")
-wca2b_gages_anis$stage_cm <- wca2b_gages$stage_cm
-
-
-wca3b_gages_anis <- as.data.frame(coords.aniso(coords = wca3b_gages@coords, 
-                                              aniso.pars = c(350, 31/30)))
-wca3b_anis <- as.data.frame(coords.aniso(coords = wca3b_coords, 
-                                        aniso.pars = c(350, 31/30)))
-colnames(wca3b_gages_anis) <- c("x_aniso", "y_aniso")  
-colnames(wca3b_anis) <- c("x_aniso", "y_aniso")
-wca3b_gages_anis$stage_cm <- wca3b_gages$stage_cm
-
-
-pw_gages_anis <- as.data.frame(coords.aniso(coords = pw_gages@coords, 
-                                              aniso.pars = c(350, 31/30)))
-pw_anis <- as.data.frame(coords.aniso(coords = pw_coords, 
-                                        aniso.pars = c(350, 31/30)))
-colnames(pw_gages_anis) <- c("x_aniso", "y_aniso")  
-colnames(pw_anis) <- c("x_aniso", "y_aniso")
-pw_gages_anis$stage_cm <- pw_gages$stage_cm
-
-
-other_gages_anis <- as.data.frame(coords.aniso(coords = other_gages@coords, 
-                                              aniso.pars = c(350, 31/30)))
-other_anis <- as.data.frame(coords.aniso(coords = other_coords, 
-                                        aniso.pars = c(350, 31/30)))
-colnames(other_gages_anis) <- c("x_aniso", "y_aniso")  
-colnames(other_anis) <- c("x_aniso", "y_aniso")
-other_gages_anis$stage_cm <- other_gages$stage_cm
-
-
-##  optimize rbf parameters & perform rbf interpolation ----
-
-# convert gage data to spatialpointsdf for rbf
-# optimize smoothing & robustness parameters
 # run rbf
 # add output of predicted stage values to df of original coordinates
-coordinates(wca1_gages_anis) <- ~x_aniso + y_aniso
-proj4string(wca1_gages_anis) <- nad_utm
-rbf_param <- graph.rbf(stage_cm ~ x_aniso + y_aniso, data = wca1_gages_anis, 
-                       eta.opt = TRUE, rho.opt = TRUE, iter = 120, n.neigh = 8, 
-                       func = "M", rho.dmax = 400, eta.dmax = 400)
-wca1_rbf <- rbf(stage_cm ~ x_aniso + y_aniso, data = wca1_gages_anis, func = "M", 
-                eta = rbf_param$Opt$par[1], rho = rbf_param$Opt$par[2], 
-                n.neigh = 8, newdata = wca1_anis) 
-wca1_rbf <- cbind(wca1_coords, wca1_rbf$var1.pred)
+wca1_rbf <- rbf(stage_cm ~ X + Y, data = wca1_gages, func = "M", 
+                eta = 16.77, rho = 0, n.neigh = 8, newdata = wca1_coords) 
+wca1_rbf <- subset(wca1_rbf, select = -var1.var)
 colnames(wca1_rbf)[3] <- "alt_stage_cm"
 head(wca1_rbf)
 
 
-coordinates(wca2b_gages_anis) <- ~x_aniso + y_aniso
-proj4string(wca2b_gages_anis) <- nad_utm
-rbf_param <- graph.rbf(stage_cm ~ x_aniso + y_aniso, data = wca2b_gages_anis, 
-                       eta.opt = TRUE, rho.opt = TRUE, iter = 120, n.neigh = 7, 
-                       func = "M", rho.dmax = 400, eta.dmax = 400)
-wca2b_rbf <- rbf(stage_cm ~ x_aniso + y_aniso, data = wca2b_gages_anis, func = "M", 
-                 eta = rbf_param$Opt$par[1], rho = rbf_param$Opt$par[2], 
-                 n.neigh = 8, newdata = wca2b_anis) 
-wca2b_rbf <- cbind(wca2b_coords, wca2b_rbf$var1.pred)
+wca2b_rbf <- rbf(stage_cm ~ X + Y, data = wca2b_gages, func = "M", 
+                eta = 16.77, rho = 0, n.neigh = 8, newdata = wca2b_coords) 
+wca2b_rbf <- subset(wca2b_rbf, select = -var1.var)
 colnames(wca2b_rbf)[3] <- "alt_stage_cm"
 head(wca2b_rbf)
 
 
-coordinates(wca3b_gages_anis) <- ~x_aniso + y_aniso
-proj4string(wca3b_gages_anis) <- nad_utm
-rbf_param <- graph.rbf(stage_cm ~ x_aniso + y_aniso, data = wca3b_gages_anis, 
-                       eta.opt = TRUE, rho.opt = TRUE, iter = 120, n.neigh = 8, 
-                       func = "M", rho.dmax = 400, eta.dmax = 400)
-wca3b_rbf <- rbf(stage_cm ~ x_aniso + y_aniso, data = wca3b_gages_anis, func = "M", 
-                 eta = rbf_param$Opt$par[1], rho = rbf_param$Opt$par[2],
-                 n.neigh = 8, newdata = wca3b_anis) 
-wca3b_rbf <- cbind(wca3b_coords, wca3b_rbf$var1.pred)
+wca3b_rbf <- rbf(stage_cm ~ X + Y, data = wca3b_gages, func = "M", 
+                eta = 16.77, rho = 0, n.neigh = 8, newdata = wca3b_coords) 
+wca3b_rbf <- subset(wca3b_rbf, select = -var1.var)
 colnames(wca3b_rbf)[3] <- "alt_stage_cm"
 head(wca3b_rbf)
 
 # note the number of neighbors here
-coordinates(pw_gages_anis) <- ~x_aniso + y_aniso
-proj4string(pw_gages_anis) <- nad_utm
-rbf_param <- graph.rbf(stage_cm ~ x_aniso + y_aniso, data = pw_gages_anis, 
-                       eta.opt = TRUE, rho.opt = TRUE, iter = 120, n.neigh = 4, 
-                       func = "M", rho.dmax = 400, eta.dmax = 400)
-pw_rbf <- rbf(stage_cm ~ x_aniso + y_aniso, data = pw_gages_anis, func = "M", 
-              eta = rbf_param$Opt$par[1], rho = rbf_param$Opt$par[2], 
-              n.neigh = 5, newdata = pw_anis) 
-pw_rbf <- cbind(pw_coords, pw_rbf$var1.pred)
+pw_rbf <- rbf(stage_cm ~ X + Y, data = pw_gages, func = "M", 
+                eta = 16.77, rho = 0, n.neigh = 5, newdata = pw_coords) 
+pw_rbf <- subset(pw_rbf, select = -var1.var)
 colnames(pw_rbf)[3] <- "alt_stage_cm"
 head(pw_rbf)
 
 
-coordinates(other_gages_anis) <- ~x_aniso + y_aniso
-proj4string(other_gages_anis) <- nad_utm
-rbf_param <- graph.rbf(stage_cm ~ x_aniso + y_aniso, data = other_gages_anis, 
-                       eta.opt = TRUE, rho.opt = TRUE, iter = 120, n.neigh = 8, 
-                       func = "M", rho.dmax = 400, eta.dmax = 400)
-other_rbf <- rbf(stage_cm ~ x_aniso + y_aniso, data = other_gages_anis, func = "M", 
-                eta = rbf_param$Opt$par[1], rho = rbf_param$Opt$par[2], 
-                n.neigh = 8, newdata = other_anis) 
-other_rbf <- cbind(other_coords, other_rbf$var1.pred)
+other_rbf <- rbf(stage_cm ~ X + Y, data = other_gages, func = "M", 
+                eta = 16.77, rho = 0, n.neigh = 8, newdata = other_coords) 
+other_rbf <- subset(other_rbf, select = -var1.var)
 colnames(other_rbf)[3] <- "alt_stage_cm"
 head(other_rbf)
 
@@ -200,7 +126,7 @@ head(other_rbf)
 
 alt_eden <- rbind(wca1_rbf, wca2b_rbf, wca3b_rbf, pw_rbf, other_rbf)
 
-coordinates(alt_eden) <- ~X_COORD + Y_COORD
+coordinates(alt_eden) <- ~ x + y
 proj4string(alt_eden) <- nad_utm
 gridded(alt_eden) <- TRUE
 alt_eden <- raster(alt_eden)
@@ -227,5 +153,5 @@ diff <- na.omit(getValues(eden_diff))
 sqrt(mean(diff^2))
 
 ## export ----
-writeRaster(alt_eden, "/Volumes/external/altEden/R_run2/output/altEden_Trial3_20081001.tif")
-writeRaster(eden_diff, "/Volumes/external/altEden/R_run2/output/edenDiff_Trial3_20081001.tif")
+writeRaster(alt_eden, "/Volumes/external/altEden/R_run2/output/altEden_Trial4_20081001.tif")
+writeRaster(eden_diff, "/Volumes/external/altEden/R_run2/output/edenDiff_Trial4_20081001.tif")
