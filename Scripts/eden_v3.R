@@ -4,7 +4,6 @@
 #-------------------------------------------------------
 
 library(geospt)
-#library(dplyr)
 library(raster)
 library(rgdal)
 library(geoR)
@@ -14,7 +13,7 @@ nad_utm <- CRS("+proj=utm +zone=17 +datum=NAD83 +units=m +no_defs +ellps=GRS80 +
 ## read in stage values at gages & convert to sp* ojbect ----
 
 # unaltered text file of daily means downloaded from EDEN website
-gages <- read.table("E:/altEden/gage_data/2008_q4_DM_v2r1/20081001_median.txt", 
+gages <- read.table("/Volumes/external/altEden/gage_data/2008_q4_DM_v2r1/20081001_median.txt", 
                     header = TRUE, sep = "\t", stringsAsFactors = FALSE)
 head(gages)
 gages <- gages[, c("Station", "X", "Y", "Daily.median.water.level..in.cm.")]
@@ -29,17 +28,17 @@ coordinates(gages) <- ~ X + Y
 proj4string(gages) <- nad_utm
 
 ## read in polygon shapefiles of the 5 subzones ----
-wca1 <- readOGR(dsn = path.expand("E:/altEden/GIS_run2/EDEN_zones_GIS"),
+wca1 <- readOGR(dsn = path.expand("/Users/Saira/Desktop/EDEN_zones_GIS"),
                 layer = "EDEN_grid_poly_Jan_10_WCA1")
-wca2b <- readOGR(dsn = path.expand("E:/altEden/GIS_run2/EDEN_zones_GIS"),
+wca2b <- readOGR(dsn = path.expand("/Users/Saira/Desktop/EDEN_zones_GIS"),
                 layer = "EDEN_grid_poly_Jan_10_WCA2B")
-wca3b <- readOGR(dsn = path.expand("E:/altEden/GIS_run2/EDEN_zones_GIS"),
+wca3b <- readOGR(dsn = path.expand("/Users/Saira/Desktop/EDEN_zones_GIS"),
                 layer = "EDEN_grid_poly_Jan_10_WCA3B")
-pw <- readOGR(dsn = path.expand("E:/altEden/GIS_run2/EDEN_zones_GIS"),
+pw <- readOGR(dsn = path.expand("/Users/Saira/Desktop/EDEN_zones_GIS"),
                 layer = "EDEN_grid_poly_Jan_10_PW")
-other <- readOGR(dsn = path.expand("E:/altEden/GIS_run2/EDEN_zones_GIS"),
+other <- readOGR(dsn = path.expand("/Users/Saira/Desktop/EDEN_zones_GIS"),
                           layer = "EDENGRID_Jan_10_NO_WCA1_2B_3B_PW")
-head(wca2b)
+head(wca2)
 plot(pw)
 
 ## find which gages are in which of the 5 subzones &  make subdivide the data ----
@@ -48,7 +47,7 @@ subgages <- over(gages, wca1) # find which pts are within the subzone
 subgages <- na.omit(subgages) # remove the pts which are not within the subzone
 wca1_gages <- gages[row.names(subgages), ] # subset original df by row index
 wca1_gages@data # check
- 
+
 subgages <- over(gages, wca2b)
 subgages <- na.omit(subgages) 
 wca2b_gages <- gages[row.names(subgages), ]
@@ -135,7 +134,7 @@ other_gages_anis$stage_cm <- other_gages$stage_cm
 coordinates(wca1_gages_anis) <- ~x_aniso + y_aniso
 proj4string(wca1_gages_anis) <- nad_utm
 wca1_rbf <- rbf(stage_cm ~ x_aniso + y_aniso, data = wca1_gages_anis, func = "M", 
-                eta = 16.77, rho = 0, n.neigh = 8, newdata = wca1_anis) 
+                eta = 0, rho = 0, n.neigh = 8, newdata = wca1_anis) 
 wca1_rbf <- cbind(wca1_coords, wca1_rbf$var1.pred)
 colnames(wca1_rbf)[3] <- "alt_stage_cm"
 head(wca1_rbf)
@@ -144,7 +143,7 @@ head(wca1_rbf)
 coordinates(wca2b_gages_anis) <- ~x_aniso + y_aniso
 proj4string(wca2b_gages_anis) <- nad_utm
 wca2b_rbf <- rbf(stage_cm ~ x_aniso + y_aniso, data = wca2b_gages_anis, func = "M", 
-                eta = 16.77, rho = 0, n.neigh = 8, newdata = wca2b_anis) 
+                eta = 0, rho = 0, n.neigh = 8, newdata = wca2b_anis) 
 wca2b_rbf <- cbind(wca2b_coords, wca2b_rbf$var1.pred)
 colnames(wca2b_rbf)[3] <- "alt_stage_cm"
 head(wca2b_rbf)
@@ -153,7 +152,7 @@ head(wca2b_rbf)
 coordinates(wca3b_gages_anis) <- ~x_aniso + y_aniso
 proj4string(wca3b_gages_anis) <- nad_utm
 wca3b_rbf <- rbf(stage_cm ~ x_aniso + y_aniso, data = wca3b_gages_anis, func = "M", 
-                eta = 16.77, rho = 0, n.neigh = 8, newdata = wca3b_anis) 
+                eta = 0, rho = 0, n.neigh = 8, newdata = wca3b_anis) 
 wca3b_rbf <- cbind(wca3b_coords, wca3b_rbf$var1.pred)
 colnames(wca3b_rbf)[3] <- "alt_stage_cm"
 head(wca3b_rbf)
@@ -162,7 +161,7 @@ head(wca3b_rbf)
 coordinates(pw_gages_anis) <- ~x_aniso + y_aniso
 proj4string(pw_gages_anis) <- nad_utm
 pw_rbf <- rbf(stage_cm ~ x_aniso + y_aniso, data = pw_gages_anis, func = "M", 
-                eta = 16.77, rho = 0, n.neigh = 5, newdata = pw_anis) 
+                eta = 0, rho = 0, n.neigh = 5, newdata = pw_anis) 
 pw_rbf <- cbind(pw_coords, pw_rbf$var1.pred)
 colnames(pw_rbf)[3] <- "alt_stage_cm"
 head(pw_rbf)
@@ -171,7 +170,7 @@ head(pw_rbf)
 coordinates(other_gages_anis) <- ~x_aniso + y_aniso
 proj4string(other_gages_anis) <- nad_utm
 other_rbf <- rbf(stage_cm ~ x_aniso + y_aniso, data = other_gages_anis, func = "M", 
-                eta = 16.77, rho = 0, n.neigh = 8, newdata = other_anis) 
+                eta = 0, rho = 0, n.neigh = 8, newdata = other_anis) 
 other_rbf <- cbind(other_coords, other_rbf$var1.pred)
 colnames(other_rbf)[3] <- "alt_stage_cm"
 head(other_rbf)
@@ -188,7 +187,7 @@ plot(alt_eden)
 
 ## compare with official EDEN surface  ----
 
-eden <- raster("E:/altEden/EDEN_surfaces/2008_q4_tiff_v2r1/s_20081001.tif")
+eden <- raster("/Volumes/external/altEden/EDEN_surfaces/2008_q4_tiff_v2r1/s_20081001.tif")
 plot(eden)
 
 # compare extent, grid
@@ -207,5 +206,5 @@ diff <- na.omit(getValues(eden_diff))
 sqrt(mean(diff^2))
 
 ## export ----
-writeRaster(alt_eden, "/Volumes/external/altEden/R_run2/output/altEden_Trial1_20081001.tif")
-writeRaster(eden_diff, "/Volumes/external/altEden/R_run2/output/edenDiff_Trial1_20081001.tif")
+writeRaster(alt_eden, "/Volumes/external/altEden/R_run2/output/altEden_Trial2_20081001.tif")
+writeRaster(eden_diff, "/Volumes/external/altEden/R_run2/output/edenDiff_Trial2_20081001.tif")
