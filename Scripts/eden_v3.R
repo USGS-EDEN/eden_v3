@@ -14,7 +14,7 @@ nad_utm <- CRS("+proj=utm +zone=17 +datum=NAD83 +units=m +no_defs +ellps=GRS80 +
 ## read in stage values at gages & convert to sp* ojbect ----
 
 # unaltered text file of daily means downloaded from EDEN website
-gages <- read.table("/Volumes/external/altEden/gage_data/2008_q4_DM_v2r1/20081001_median.txt", 
+gages <- read.table("E:/altEden/gage_data/2008_q4_DM_v2r1/20081001_median.txt", 
                     header = TRUE, sep = "\t", stringsAsFactors = FALSE)
 head(gages)
 gages <- gages[, c("Station", "X", "Y", "Daily.median.water.level..in.cm.")]
@@ -29,15 +29,15 @@ coordinates(gages) <- ~ X + Y
 proj4string(gages) <- nad_utm
 
 ## read in polygon shapefiles of the 5 subzones ----
-wca1 <- readOGR(dsn = path.expand("/Users/Saira/Desktop/EDEN_zones_GIS"),
+wca1 <- readOGR(dsn = path.expand("E:/altEden/GIS_run2/EDEN_zones_GIS"),
                 layer = "EDEN_grid_poly_Jan_10_WCA1")
-wca2b <- readOGR(dsn = path.expand("/Users/Saira/Desktop/EDEN_zones_GIS"),
+wca2b <- readOGR(dsn = path.expand("E:/altEden/GIS_run2/EDEN_zones_GIS"),
                 layer = "EDEN_grid_poly_Jan_10_WCA2B")
-wca3b <- readOGR(dsn = path.expand("/Users/Saira/Desktop/EDEN_zones_GIS"),
+wca3b <- readOGR(dsn = path.expand("E:/altEden/GIS_run2/EDEN_zones_GIS"),
                 layer = "EDEN_grid_poly_Jan_10_WCA3B")
-pw <- readOGR(dsn = path.expand("/Users/Saira/Desktop/EDEN_zones_GIS"),
+pw <- readOGR(dsn = path.expand("E:/altEden/GIS_run2/EDEN_zones_GIS"),
                 layer = "EDEN_grid_poly_Jan_10_PW")
-other <- readOGR(dsn = path.expand("/Users/Saira/Desktop/EDEN_zones_GIS"),
+other <- readOGR(dsn = path.expand("E:/altEden/GIS_run2/EDEN_zones_GIS"),
                           layer = "EDENGRID_Jan_10_NO_WCA1_2B_3B_PW")
 head(wca2b)
 plot(pw)
@@ -89,35 +89,35 @@ colnames(other_coords) <- c("X", "Y")
 # run rbf
 # add output of predicted stage values to df of original coordinates
 wca1_rbf <- rbf(stage_cm ~ X + Y, data = wca1_gages, func = "M", 
-                eta = 16.77, rho = 0, n.neigh = 8, newdata = wca1_coords) 
+                eta = 0, rho = 0, n.neigh = 8, newdata = wca1_coords) 
 wca1_rbf <- subset(wca1_rbf, select = -var1.var)
 colnames(wca1_rbf)[3] <- "alt_stage_cm"
 head(wca1_rbf)
 
 
 wca2b_rbf <- rbf(stage_cm ~ X + Y, data = wca2b_gages, func = "M", 
-                eta = 16.77, rho = 0, n.neigh = 8, newdata = wca2b_coords) 
+                eta = 0, rho = 0, n.neigh = 8, newdata = wca2b_coords) 
 wca2b_rbf <- subset(wca2b_rbf, select = -var1.var)
 colnames(wca2b_rbf)[3] <- "alt_stage_cm"
 head(wca2b_rbf)
 
 
 wca3b_rbf <- rbf(stage_cm ~ X + Y, data = wca3b_gages, func = "M", 
-                eta = 16.77, rho = 0, n.neigh = 8, newdata = wca3b_coords) 
+                eta = 0, rho = 0, n.neigh = 8, newdata = wca3b_coords) 
 wca3b_rbf <- subset(wca3b_rbf, select = -var1.var)
 colnames(wca3b_rbf)[3] <- "alt_stage_cm"
 head(wca3b_rbf)
 
 # note the number of neighbors here
 pw_rbf <- rbf(stage_cm ~ X + Y, data = pw_gages, func = "M", 
-                eta = 16.77, rho = 0, n.neigh = 5, newdata = pw_coords) 
+                eta = 0, rho = 0, n.neigh = 5, newdata = pw_coords) 
 pw_rbf <- subset(pw_rbf, select = -var1.var)
 colnames(pw_rbf)[3] <- "alt_stage_cm"
 head(pw_rbf)
 
 
 other_rbf <- rbf(stage_cm ~ X + Y, data = other_gages, func = "M", 
-                eta = 16.77, rho = 0, n.neigh = 8, newdata = other_coords) 
+                eta = 0, rho = 0, n.neigh = 8, newdata = other_coords) 
 other_rbf <- subset(other_rbf, select = -var1.var)
 colnames(other_rbf)[3] <- "alt_stage_cm"
 head(other_rbf)
@@ -134,7 +134,7 @@ plot(alt_eden)
 
 ## compare with official EDEN surface  ----
 
-eden <- raster("/Volumes/external/altEden/EDEN_surfaces/2008_q4_tiff_v2r1/s_20081001.tif")
+eden <- raster("E:/altEden/EDEN_surfaces/2008_q4_tiff_v2r1/s_20081001.tif")
 plot(eden)
 
 # compare extent, grid
@@ -153,5 +153,5 @@ diff <- na.omit(getValues(eden_diff))
 sqrt(mean(diff^2))
 
 ## export ----
-writeRaster(alt_eden, "/Volumes/external/altEden/R_run2/output/altEden_Trial4_20081001.tif")
-writeRaster(eden_diff, "/Volumes/external/altEden/R_run2/output/edenDiff_Trial4_20081001.tif")
+writeRaster(alt_eden, "E:/altEden/R_run2/output/altEden_Trial5_20081001.tif")
+writeRaster(eden_diff, "E:/altEden/R_run2/output/edenDiff_Trial5_20081001.tif")
