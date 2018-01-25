@@ -2,11 +2,6 @@
 # THIS SCRIPT CONTAINS A SERIES OF FUNCTIONS FOR RUNNING A WATER SURFACE 
 # INTERPOLATION OVER THE EDEN EXTENT
 
-# THE SCRIPT HERE ACCEPTS CSV MEDIANS FILE AS A STAGE FILE FOR THE GAUGES
-
-# THESE FUNCTIONS DO NOT REQUIRE THE FILES IN THE 'DATA' FOLDER TO RUN 
-# BECAUSE THEY SHOULD ALREADY BE LOADED (MAKING THE INTERPOLATION FASTER)
-
 #------------------------------------------------------------------------------
 
 print("These functions require these libraries to be installed: geospt, raster, rgdal, geoR")
@@ -330,15 +325,7 @@ interpolate_gauges_csv <- function(gages){
   return(alt_eden)
 }  
 
-##### 2 - FUNCTION THAT CREATES DIFFERENCE RASTER W REAL EDEN #### ------------
 
-find_diff_raster <- function(alt_eden_raster, real_eden_raster){
-    
-  real_eden_raster <- round(real_eden_raster)
-  eden_diff <- alt_eden_raster - real_eden_raster # predicted - actual
-  return(eden_diff)
-}
-  
 ##### 3 - FUNCTION THAT FINDS RMSE BETWEEN ALTEDEN & REAL EDEN #### ------------
 
 find_rmse <- function(alt_eden_raster, real_eden_raster){
@@ -348,14 +335,6 @@ find_rmse <- function(alt_eden_raster, real_eden_raster){
   diff <- na.omit(getValues(diff_raster))
   rmse <- sqrt(mean(diff^2))
   return(rmse)
-}
-
-##### 4 - FUNCTION THAT FINDS THE DEPTH FROM THE EDEN EXTENT #### --------------
-
-find_eden_depth <- function(stage_raster){
-  eden_dem <- raster("./data/GIS/eden_em_oc10_cm.tif")
-  depth_raster <- stage_raster - eden_dem
-  return(depth_raster)
 }
 
 ##### 5 - FUNCTION THAT FINDS THE DEPTH FROM THE WERP EXTENT #### --------------
