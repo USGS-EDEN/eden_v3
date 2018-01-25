@@ -13,8 +13,8 @@
 #-----------------------------------------------------------------------------
 # LIBRARIES
 
-source("ever4cast_eden.R")
-source("netCDF_IO_v3.1_varTYX.R")
+source("./Scripts/eden_v3.R")
+source("../R_library/netCDF_IO_v3.1_varTYX.R")
 library(reshape2)
 library(data.table)
 
@@ -24,74 +24,6 @@ library(data.table)
 sim_medians_folder <- "E:/ever4cast_2018/e4c_v1.1.2_forecast_stage_2018/spa_central_tendency_20180101_20180630/20180104_spa_central_tendency_20180101_20180630_daily_median_data"
 output_folder <- "E:/ever4cast_2018/eden_forecast2018/netcdfs/"
 output_csv_folder <- "E:/ever4cast_2018/eden_forecast2018/csvs/"
-
-#------------------------------------------------------------------------------
-# TO SPEED UP THE INTERPOLATION, SOME PARTS OF THE INTERPOLATION MUST BE DONE
-# OUTSIDE THE FUNCTION:
-
-id <- read.csv("./data/gauge_name_EArea_id.csv")
-nad_utm <- CRS("+proj=utm +zone=17 +datum=NAD83 +units=m +no_defs +ellps=GRS80 +towgs84=0,0,0")
-
-#### read in polygon shapefiles of all the subzones  ####
-wca1 <- readOGR(dsn = path.expand("./data/GIS"),
-                layer = "EDEN_grid_poly_Jan_10_WCA1")
-wca2b <- readOGR(dsn = path.expand("./data/GIS"),
-                 layer = "EDEN_grid_poly_Jan_10_WCA2B")
-wca3b <- readOGR(dsn = path.expand("./data/GIS"),
-                 layer = "EDEN_grid_poly_Jan_10_WCA3B")
-pw <- readOGR(dsn = path.expand("./data/GIS"),
-              layer = "EDEN_grid_poly_Jan_10_PW")
-other <- readOGR(dsn = path.expand("./data/GIS"),
-                 layer = "EDEN_grid_poly_OTHER_noWCA2A_noL67ext_noWCA3A")
-wca2a <- readOGR(dsn = path.expand("./data/GIS"),
-                 layer = "EDEN_grid_poly_WCA2A")
-l67ext <- readOGR(dsn = path.expand("./data/GIS"),
-                  layer = "EDEN_grid_poly_east_L67ext")
-wca3a <- readOGR(dsn = path.expand("./data/GIS"),
-                 layer = "EDEN_grid_poly_WCA3A")
-
-##### Create dataframes of the polygon centroids #####
-wca1_coords <- wca1@data[, c("X_COORD", "Y_COORD")]
-wca2b_coords <- wca2b@data[, c("X_COORD", "Y_COORD")]
-wca3b_coords <- wca3b@data[, c("X_COORD", "Y_COORD")]
-pw_coords <- pw@data[, c("X_COORD", "Y_COORD")]
-other_coords <- other@data[, c("X_COORD", "Y_COORD")]
-wca2a_coords <- wca2a@data[, c("X_COORD", "Y_COORD")]
-l67ext_coords <- l67ext@data[, c("X_COORD", "Y_COORD")]
-wca3a_coords <- wca3a@data[, c("X_COORD", "Y_COORD")]
-
-# convert to anisotropic coords for: EDEN-centroids
-wca1_anis <- as.data.frame(coords.aniso(coords = wca1_coords, 
-                                        aniso.pars = c(350, 31/30)))
-colnames(wca1_anis) <- c("x_aniso", "y_aniso") 
-
-wca2b_anis <- as.data.frame(coords.aniso(coords = wca2b_coords, 
-                                         aniso.pars = c(350, 31/30)))
-colnames(wca2b_anis) <- c("x_aniso", "y_aniso")
-
-wca3b_anis <- as.data.frame(coords.aniso(coords = wca3b_coords, 
-                                         aniso.pars = c(350, 31/30)))
-colnames(wca3b_anis) <- c("x_aniso", "y_aniso")
-
-pw_anis <- as.data.frame(coords.aniso(coords = pw_coords, 
-                                      aniso.pars = c(350, 31/30)))
-colnames(pw_anis) <- c("x_aniso", "y_aniso")
-
-other_anis <- as.data.frame(coords.aniso(coords = other_coords, 
-                                         aniso.pars = c(350, 31/30)))
-colnames(other_anis) <- c("x_aniso", "y_aniso")
-
-wca2a_anis <- as.data.frame(coords.aniso(coords = wca2a_coords, 
-                                         aniso.pars = c(350, 31/30)))
-colnames(wca2a_anis) <- c("x_aniso", "y_aniso")
-
-l67ext_anis <- as.data.frame(coords.aniso(coords = l67ext_coords, 
-                                          aniso.pars = c(350, 31/30)))
-colnames(l67ext_anis) <- c("x_aniso", "y_aniso")
-
-wca3a_anis <- as.data.frame(coords.aniso(coords = wca3a_coords, 
-                                         aniso.pars = c(350, 31/30)))
-colnames(wca3a_anis) <- c("x_aniso", "y_aniso")
 
 #------------------------------------------------------------------------------
 # Set up netcdf info 
@@ -108,18 +40,18 @@ long_layer_name <- "Water Depth (cm)"
 out_units       <- "cm"
 out_prec        <- "float"
 background      <- NaN            ### JUST CHANGED THIS MIGHT NEED TO CHECK IT WORKS ####                             
-source_name    <- "interp_sim_depths.r"
+source_name    <- "ever4cast_sims.r"
 institution    <- "Wetland and Aquatic Research Center, USGS"
 qaqc           <- "under review"
 comments       <- "Product derived from RBF interpolation of water stage over the EDEN extent"
 
 #------------------------------------------------------------------------------
-# INTERPOLATION OF EVER4CAST SIMULATION DATA & OUTPUT NETCDF ------------------
+# INTERPOLATION OF EVER4CAST SIMULATION DATA & OUTPUT NETCDF 
 
 ## Get Data ## ----------------------------------------------------------------
 
 # DEM
-dem <- read.csv("./data/werp_dem_400m_cm.csv", stringsAsFactors = FALSE)
+dem <- read.csv("./GIS/DEM/werp_dem_400m_cm.csv", stringsAsFactors = FALSE)
 
 # List of simulations
 sims <- list.files(sim_medians_folder, full.names = TRUE)
