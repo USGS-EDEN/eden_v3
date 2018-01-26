@@ -3,31 +3,26 @@
 # THROUGH THE R-VERSION OF EDEN
 # OUTPUTS A NETCDF OF DEPTH PER SIMULATION
 
-
-
 # Saira Haider 
+# shaider@usgs.gov
 # Romanach Lab @ Wetland and Aquatic Research Center 
 # US Geological Survey
-
-# Last update: January 4th, 2017                      
 #-----------------------------------------------------------------------------
-# LIBRARIES
 
 source("./Scripts/eden_v3.R")
-source("../R_library/netCDF_IO_v3.1_varTYX.R")
+source("../R_library/netCDF_IO_v3.1.R")
 library(reshape2)
 library(data.table)
 
 #------------------------------------------------------------------------------
 # USER INPUTS
 
-sim_medians_folder <- "E:/ever4cast_2018/e4c_v1.1.2_forecast_stage_2018/spa_central_tendency_20180101_20180630/20180104_spa_central_tendency_20180101_20180630_daily_median_data"
-output_folder <- "E:/ever4cast_2018/eden_forecast2018/netcdfs/"
-output_csv_folder <- "E:/ever4cast_2018/eden_forecast2018/csvs/"
+sim_medians_folder <- "../Ever4Cast/e4c_v1.1.2_forecast_stage_2018/spa_central_tendency_20180101_20180630/20180104_spa_central_tendency_20180101_20180630_daily_median_data"
+output_folder <- "../Ever4Cast//eden_forecast2018/netcdfs/"
+output_csv_folder <- "../Ever4Cast/eden_forecast2018/csvs/"
 
 #------------------------------------------------------------------------------
 # Set up netcdf info 
-rotate <- function(x) t(apply(x, 2, rev)) # rotates matrix 90 degrees clockwise
 
 xDim            <- 287            #number of columns
 yDim            <- 405            #number of rows
@@ -39,19 +34,17 @@ out_layer       <- "depth"
 long_layer_name <- "Water Depth (cm)"
 out_units       <- "cm"
 out_prec        <- "float"
-background      <- NaN            ### JUST CHANGED THIS MIGHT NEED TO CHECK IT WORKS ####                             
-source_name    <- "ever4cast_sims.r"
-institution    <- "Wetland and Aquatic Research Center, USGS"
-qaqc           <- "under review"
-comments       <- "Product derived from RBF interpolation of water stage over the EDEN extent"
-
-#------------------------------------------------------------------------------
-# INTERPOLATION OF EVER4CAST SIMULATION DATA & OUTPUT NETCDF 
+background      <- NaN                         
+source_name     <- "ever4cast_sims.r"
+institution     <- "Wetland and Aquatic Research Center, USGS"
+qaqc            <- "under review"
+comments        <- "Product derived from RBF interpolation of water stage over the EDEN extent"
 
 ## Get Data ## ----------------------------------------------------------------
 
 # DEM
-dem <- read.csv("./GIS/DEM/werp_dem_400m_cm.csv", stringsAsFactors = FALSE)
+dem <- read.csv("../WERP/Output/werp_dem_400m_cm.csv", 
+                stringsAsFactors = FALSE)
 
 # List of simulations
 sims <- list.files(sim_medians_folder, full.names = TRUE)
@@ -77,7 +70,7 @@ print(sims)
 
 startTime <- proc.time()
 
-for(i in 1:length(sims)){              # i <- 2
+for(i in 1:length(sims)){              # i <- 1
 
   df <- sim_list[[i]]
   daily_list <- split(df, df$Date) # list of daily dataframes
@@ -96,6 +89,10 @@ for(i in 1:length(sims)){              # i <- 2
   sim_depth$depth <- sim_depth$stage - sim_depth$DEM_cm
   sim_depth <- within(sim_depth, rm(stage, DEM_cm))
   
+  # Find min and max for netcdf attributes
+  depth_min <- min(sim_depth$depth)
+  depth_max <- max(sim_depth$depth)
+  
   # Export depth as csv
   output_csv_file <- paste0(output_csv_folder, sim_names[i], "_depth", ".csv")
   fwrite(sim_depth, output_csv_file)
@@ -106,18 +103,20 @@ for(i in 1:length(sims)){              # i <- 2
   nc_out <- createNetCDFfile(out.name = output_file,
                              layer.name = out_layer,
                              units = out_units,
-                             prec = out_prec,                  #'short' 'integer' 'float' 'double' 'char' 'byte'.
+                             prec = out_prec,
                              long.name = long_layer_name,
-                             daily = TRUE,                     # 'TRUE' is daily  or arbitary time step;  'FALSE' is annual time step
-                             extent = extent,                  # c(UTMx.left, UTMx.right, UTMy.top, UTMy.bottom)
+                             daily = TRUE,
+                             extent = extent,
                              cell.size = cell_size,
                              fill.value = background,
-                             source.name = source_name,        #  software that created the file: name, version number, & configuration info
-                             institution = institution,        # institution or organization that created the file
-                             qaqc = qaqc,                      # quality control/quality assurance status
-                             comments = comments,              # ~ 1 to 3 sentence explanation of what this file contains.
+                             source.name = source_name,
+                             institution = institution,
+                             qaqc = qaqc,
+                             comments = comments,
                              start.dateStr = start_date_str, 
-                             t.size = tDim                     # vector of time steps: supersedes "daily" attribute
+                             t.size = tDim,
+                             layer.min = depth_min,
+                             layer.max = depth_max
   )
   
   # Write data for each time step as a matrix to export as netcdf
@@ -139,5 +138,3 @@ stopTime <- proc.time()
 duration <- stopTime - startTime
 duration[3]/60  # Number of minutes
 duration[3]/60/60  # Number of hours
-duration[3]/60/60*4  # Number of hours for 100 simulation
-duration[3]/60/60*4/24  # Number of days for 100 simulations
