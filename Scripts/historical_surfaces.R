@@ -56,7 +56,7 @@ for(i in 2676:length(medians)){    #i <- 10
   day <- median_dates[i]
   
   # interpolate & export
-  df <- interpolate_gauges_csv(df)
+  df <- interpolate_gauges(df)
   csv_file <- paste0(output_csvs, "stage_cm_", day, ".csv")
   write.csv(df, csv_file, row.names = FALSE)
  
