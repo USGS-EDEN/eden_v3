@@ -329,18 +329,6 @@ interpolate_gauges_csv <- function(gages){
   return(alt_eden)
 }  
 
-
-##### 3 - FUNCTION THAT FINDS RMSE BETWEEN ALTEDEN & REAL EDEN #### ------------
-
-find_rmse <- function(alt_eden_raster, real_eden_raster){
- 
-  real_eden_raster <- round(real_eden_raster)
-  diff_raster <- alt_eden_raster - real_eden_raster # predicted - actual 
-  diff <- na.omit(getValues(diff_raster))
-  rmse <- sqrt(mean(diff^2))
-  return(rmse)
-}
-
 ##### 5 - FUNCTION THAT FINDS THE DEPTH FROM THE WERP EXTENT #### --------------
 
 find_werp_depth <- function(stage_raster){
