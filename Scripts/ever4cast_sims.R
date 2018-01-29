@@ -77,7 +77,7 @@ for(i in 1:length(sims)){              # i <- 1
   
   # Run simulation for each day
   print(paste("Simulation ", i, " of ", length(sims)))
-  sim_stage_list <- lapply(daily_list, interpolate_gauges_csv)
+  sim_stage_list <- lapply(daily_list, interpolate_gauges)
 
   # Add column for date
   sim_stage <- rbindlist(sim_stage_list)
