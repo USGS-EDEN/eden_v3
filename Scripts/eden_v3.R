@@ -329,14 +329,6 @@ interpolate_gauges_csv <- function(gages){
   return(alt_eden)
 }  
 
-##### 5 - FUNCTION THAT FINDS THE DEPTH FROM THE WERP EXTENT #### --------------
-
-find_werp_depth <- function(stage_raster){
-  werp_dem <- raster("./data/GIS/werpeden_400m_cm.tif")
-  werp_dem <- crop(werp_dem, stage_raster)
-  depth_raster <- stage_raster - werp_dem
-  return(depth_raster)
-}
 
 ##### 6 - FUNCTION TO RUN RBF INTEROPLATION OF GAUGES & EXPORT RASTER #### --------
 # Output: raster interpolation of water level (stage) in same units as input
