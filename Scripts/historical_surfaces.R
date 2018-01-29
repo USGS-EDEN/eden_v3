@@ -15,11 +15,9 @@ source("./Scripts/eden_v3.R")
 ## USER INPUTS ##
 
 gage_data <- "../EDEN/gage_data"
-eden_raster <- "../EDEN/surfaces/rasters"
 
 output_csvs <- "./Output/Stage/historical_csvs/"
 output_rasters <- "./Output/Stage/historical_rasters/"
-
 
 #------------------------------------------------------------------------------
 # Read in gauge data
@@ -47,11 +45,12 @@ medians <- medians[dates_num >= 20070101]
 #### RUN INTERPOLATION FUNCTIONS 
 
 
-sink("./Output/historical_surfaces_consolePrint.txt")
+sink("./Output/historical_surfaces_consolePrint2.txt")
 
-for(i in 1:length(medians)){    #i <- 10
+for(i in 2676:length(medians)){    #i <- 10
   
   df <- read.table(medians[i], sep = "\t", header = TRUE)
+  print(medians[i])
   
   # get date
   day <- median_dates[i]

@@ -2,6 +2,10 @@
 # THIS SCRIPT CONTAINS A SERIES OF FUNCTIONS FOR RUNNING A WATER SURFACE 
 # INTERPOLATION OVER THE EDEN EXTENT
 
+# Saira Haider 
+# shaider@usgs.gov
+# Romanach Lab @ Wetland and Aquatic Research Center 
+# US Geological Survey
 #------------------------------------------------------------------------------
 
 print("These functions require these libraries to be installed: geospt, raster, rgdal, geoR")
@@ -592,7 +596,4 @@ interpolate_gauges_raster <- function(gages){
   alt_eden_raster <- raster(alt_eden)
   
   return(alt_eden_raster)
-}  
-
-
-
+}
