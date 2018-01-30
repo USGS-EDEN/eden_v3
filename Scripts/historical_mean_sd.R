@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 
 library(raster)
-library(rgdal)
+#library(rgdal)
 
 #------------------------------------------------------------------------------
 
@@ -15,18 +15,23 @@ v3_files <- list.files("./Output/Comparison/historical_diff_rasters",
                         pattern = ".tif$", full.names = TRUE)
 v3_rstack <- stack(v3_files)
 
+
+
+## Use multiple cores
+cores <- 4
+beginCluster(cores, type = "SOCK")
+
 # Find RMSE
-sqrt(mean(v3_rstack [1:10]^2)) # testing
+sqrt(mean(v3_rstack[[1:10]]^2)) # testing
 rmse <- sqrt(mean(v3_rstack^2))
 plot(rmse)
 writeRaster(rmse, "./Output/Comparison/diff_2007to2017q3_rmse.tif")
 
 # Find Standard deviation
-calc(alt_brk[[1:3]], fun = sd) # testing
+calc(v3_rstack[[1:3]], fun = sd) # testing
+stdev <- calc(v3_rstack, fun = sd)
 
-cores <- 4
-beginCluster(cores, type = "SOCK")
-stdev <- calc(alt_brk, fun = sd)
+## Stop using multiple cores
 endCluster()
 
 plot(stdev)

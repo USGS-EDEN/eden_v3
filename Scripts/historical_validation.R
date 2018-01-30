@@ -10,6 +10,8 @@
 # shaider@usgs.gov
 #------------------------------------------------------------------------------
 
+library(raster)
+
 ## USER INPUTS ##
 
 eden_v3_folder <- "./Output/Stage/historical_rasters/"
@@ -73,9 +75,10 @@ for(i in 1:length(eden_v3)){    #i <- 10
 ## Create RMSE dataframe & export
 rmse_df <- data.frame(cbind(dates, error_vec), stringsAsFactors = FALSE)
 colnames(rmse_df) <- c("dates", "rmse_cm")
-rmse_df
+rmse_df$rmse_cm <- round(error_vec, digits = 2)
+head(rmse_df)
 
-write.csv(rmse_df, rmse_file)
+write.csv(rmse_df, rmse_file, row.names = FALSE)
 
-mean(error_vec, na.rm = TRUE)
+mean(error_vec)
 summary(error_vec)

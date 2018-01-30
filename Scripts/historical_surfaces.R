@@ -40,14 +40,15 @@ median_dates[2991:3836]
 dates_num <- as.numeric(median_dates)
 median_dates <- median_dates[dates_num >= 20070101]
 medians <- medians[dates_num >= 20070101]
+medians[4000:4291]
 
 #------------------------------------------------------------------------------
 #### RUN INTERPOLATION FUNCTIONS 
 
 
-sink("./Output/historical_surfaces_consolePrint2.txt")
+sink("./Output/historical_surfaces_consolePrint.txt")
 
-for(i in 2676:length(medians)){    #i <- 10
+for(i in 1:length(medians)){    #i <- 10
   
   df <- read.table(medians[i], sep = "\t", header = TRUE)
   print(medians[i])
