@@ -14,7 +14,7 @@ source("./Scripts/eden_v3.R")
 
 ## USER INPUTS ##
 
-gage_data <- "../EDEN/gage_data"
+gage_data <- "../EDEN/Data/gage_data"
 
 output_csvs <- "./Output/Stage/historical_csvs/"
 output_rasters <- "./Output/Stage/historical_rasters/"
@@ -48,7 +48,7 @@ medians[4000:4291]
 
 sink("./Output/historical_surfaces_consolePrint.txt")
 
-for(i in 1:length(medians)){    #i <- 10
+for(i in 1:length(medians)){    #i <- 1734
   
   df <- read.table(medians[i], sep = "\t", header = TRUE)
   print(medians[i])

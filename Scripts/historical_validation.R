@@ -15,7 +15,7 @@ library(raster)
 ## USER INPUTS ##
 
 eden_v3_folder <- "./Output/Stage/historical_rasters/"
-eden_v2_folder <- "../EDEN/surfaces/rasters"
+eden_v2_folder <- "../EDEN/Data/surfaces/rasters"
 
 rmse_file <- "./Output/Comparison/RMSE_v3_minus_v2.csv"
 output_diff_rasters <- "./Output/Comparison/historical_diff_rasters/"
@@ -41,7 +41,7 @@ dates
 # vector to store RMSE
 error_vec <- vector()
 
-for(i in 1:length(eden_v3)){    #i <- 10
+for(i in 1:length(eden_v3)){    #i <- 1734
   
   # import EDEN v3 raster
   eden_v3_r <- raster(eden_v3[i])
