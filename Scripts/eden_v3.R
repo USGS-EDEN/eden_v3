@@ -98,20 +98,20 @@ colnames(wca3a_anis) <- c("x_aniso", "y_aniso")
 #------------------------------------------------------------------------------
 
 
-#####  FUNCTION RUNS RBF INTEROPLATION OF GAUGES #### ---------------------
+#####  FUNCTION RUNS RBF INTEROPLATION OF GAGES #### ---------------------
 
-interpolate_gauges <- function(gages, format = "df"){
+interpolate_gages <- function(gages, format = "df"){
   print("Preparing data...")
   
   station_index <- grep("Station", colnames(gages), ignore.case = TRUE)
-  colnames(gages)[station_index] <- "gauge_name"
+  colnames(gages)[station_index] <- "gage_name"
   
   if("EArea" %in% colnames(gages)) {
     gages <- within(gages, rm("EArea"))
   }
   
-  ### MERGE WITH ID COLUMN OF EVER4CAST GAUGE NAMES ###
-  # need rows for pseudo & semi gauges; columns for EArea & both versions of gauge names
+  ### MERGE WITH ID COLUMN OF EVER4CAST GAGE NAMES ###
+  # need rows for pseudo & semi gages; columns for EArea & both versions of gage names
   gages$X <- round(gages$X, digits = 1)
   gages$Y <- round(gages$Y, digits = 1)
   gages <- merge(id, gages, all.x = TRUE, by.x = c("x", "y"), by.y = c("X", "Y"))
@@ -119,39 +119,39 @@ interpolate_gauges <- function(gages, format = "df"){
   colnames(gages)[stage_index] <- "stage_cm"
   gages <- gages[, c("x", "y", "Station", "EArea", "stage_cm")]
   
-  #### ADD PSEUDO- & SEMI- GAUGE STAGE VALUES ####
-  # add 4 semi-gauges stage values (2 have the same name)
+  #### ADD PSEUDO- & SEMI- GAGE STAGE VALUES ####
+  # add 4 semi-gages stage values (2 have the same name)
   gages[gages$Station == "pBCA19+LO1", ]$stage_cm <- gages[gages$Station == "BCA19+", ]$stage_cm
   gages[gages$Station == "pNP202NE1", ]$stage_cm <- gages[gages$Station == "NP202", ]$stage_cm
   gages[gages$Station == "pS12D_DN", ]$stage_cm <- gages[gages$Station == "S12D_DN", ]$stage_cm
   
-  # add 5 pseudo-gauge stage values
+  # add 5 pseudo-gage stage values
   # the one on the wca1 - wca2a border reduces error in the northern pt
   gages[gages$Station == "pseudo_canal_1", ]$stage_cm <- gages[gages$Station == "S10D_DN", ]$stage_cm
   # create linear eqns for the four on the wca3a border
   # adding these reduce error on the 3A side
   upper <- gages[gages$Station == "S151+H", ]$stage_cm
   lower <- gages[gages$Station == "S333-H", ]$stage_cm
-  slope <- (upper - lower) / 32.57 # 32.57 km between the two gauges (as canal distance, not straight-line)
-  # 13.48 km = dist b/t upper gauge and pseudo gauge 2
+  slope <- (upper - lower) / 32.57 # 32.57 km between the two gages (as canal distance, not straight-line)
+  # 13.48 km = dist b/t upper gage and pseudo gage 2
   gages[gages$Station == "pseudo_canal_2", ]$stage_cm <- round(upper - (slope * 13.48)) #279
-  # 15.88 km = dist b/t upper gauge and pseudo gauge 3
+  # 15.88 km = dist b/t upper gage and pseudo gage 3
   gages[gages$Station == "pseudo_canal_3", ]$stage_cm <- round(upper - (slope * 15.88)) #277
-  # 25.28 km = dist b/t upper gauge and pseudo gauge 4
+  # 25.28 km = dist b/t upper gage and pseudo gage 4
   gages[gages$Station == "pseudo_canal_4", ]$stage_cm <- round(upper - (slope * 25.28)) #268
-  # 30.14 km = dist b/t upper gauge and pseudo gauge 5
+  # 30.14 km = dist b/t upper gage and pseudo gage 5
   gages[gages$Station == "pseudo_canal_5", ]$stage_cm <- round(upper - (slope * 30.14)) #264
   
-  #### ADD 'EArea' VALUE to the pseudo-gauges ####
+  #### ADD 'EArea' VALUE to the pseudo-gages ####
   gages[gages$Station == "pseudo_canal_1", ]$EArea <- "Water Conservation Area 2A"
   gages[gages$Station == "pseudo_canal_2", ]$EArea <- "Water Conservation Area 3A"
   gages[gages$Station == "pseudo_canal_3", ]$EArea <- "Water Conservation Area 3A"
   gages[gages$Station == "pseudo_canal_4", ]$EArea <- "Water Conservation Area 3A"
   gages[gages$Station == "pseudo_canal_5", ]$EArea <- "Water Conservation Area 3A"
   
-  ## remove gauges that don't have measurements for that day....
+  ## remove gages that don't have measurements for that day....
   no_na_values <- sum(is.na(gages$stage_cm))
-  print("The number of missing gauges on this day is: ", no_na_values)
+  print("The number of missing gages on this day is: ", no_na_values)
   print(no_na_values)
   gages <- na.omit(gages)
   
@@ -210,8 +210,8 @@ interpolate_gauges <- function(gages, format = "df"){
   
   # don't have to do this with new EDEN files?!
   # going to include it JUST IN CASE 
-  # fix incorrect location of gauge G-3567
-  # fyi: this gauge NOT located in EVER4CAST files
+  # fix incorrect location of gage G-3567
+  # fyi: this gage NOT located in EVER4CAST files
   gages$X[gages$Station == "G-3567"] <- 556509
   gages$Y[gages$Station == "G-3567"] <- 2864737
   
