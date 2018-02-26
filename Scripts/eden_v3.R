@@ -64,35 +64,35 @@ wca3a_coords <- wca3a@data[, c("X_COORD", "Y_COORD")]
 
 # convert to anisotropic coords for: EDEN-centroids
 wca1_anis <- as.data.frame(coords.aniso(coords = wca1_coords, 
-                                        aniso.pars = c(350, 31/30)))
+                                        aniso.pars = c(350*pi/180, 31/30)))
 colnames(wca1_anis) <- c("x_aniso", "y_aniso") 
 
 wca2b_anis <- as.data.frame(coords.aniso(coords = wca2b_coords, 
-                                         aniso.pars = c(350, 31/30)))
+                                         aniso.pars = c(350*pi/180, 31/30)))
 colnames(wca2b_anis) <- c("x_aniso", "y_aniso")
 
 wca3b_anis <- as.data.frame(coords.aniso(coords = wca3b_coords, 
-                                         aniso.pars = c(350, 31/30)))
+                                         aniso.pars = c(350*pi/180, 31/30)))
 colnames(wca3b_anis) <- c("x_aniso", "y_aniso")
 
 pw_anis <- as.data.frame(coords.aniso(coords = pw_coords, 
-                                      aniso.pars = c(350, 31/30)))
+                                      aniso.pars = c(350*pi/180, 31/30)))
 colnames(pw_anis) <- c("x_aniso", "y_aniso")
 
 other_anis <- as.data.frame(coords.aniso(coords = other_coords, 
-                                         aniso.pars = c(350, 31/30)))
+                                         aniso.pars = c(350*pi/180, 31/30)))
 colnames(other_anis) <- c("x_aniso", "y_aniso")
 
 wca2a_anis <- as.data.frame(coords.aniso(coords = wca2a_coords, 
-                                         aniso.pars = c(350, 31/30)))
+                                         aniso.pars = c(350*pi/180, 31/30)))
 colnames(wca2a_anis) <- c("x_aniso", "y_aniso")
 
 l67ext_anis <- as.data.frame(coords.aniso(coords = l67ext_coords, 
-                                          aniso.pars = c(350, 31/30)))
+                                          aniso.pars = c(350*pi/180, 31/30)))
 colnames(l67ext_anis) <- c("x_aniso", "y_aniso")
 
 wca3a_anis <- as.data.frame(coords.aniso(coords = wca3a_coords, 
-                                         aniso.pars = c(350, 31/30)))
+                                         aniso.pars = c(350*pi/180, 31/30)))
 colnames(wca3a_anis) <- c("x_aniso", "y_aniso")
 
 #------------------------------------------------------------------------------
@@ -222,7 +222,7 @@ interpolate_gages <- function(gages, format = "df"){
   
   # conver to anisotropic coords for: gages
   wca1_gages_anis <- as.data.frame(coords.aniso(coords = wca1_gages[, c("x", "y")], 
-                                                aniso.pars = c(350, 31/30)))
+                                                aniso.pars = c(350*pi/180, 31/30)))
   # new & identical coord column names
   colnames(wca1_gages_anis) <- c("x_aniso", "y_aniso")  
   # add stage values back to gage df
@@ -230,43 +230,43 @@ interpolate_gages <- function(gages, format = "df"){
   
   
   wca2b_gages_anis <- as.data.frame(coords.aniso(coords = wca2b_gages[, c("x", "y")], 
-                                                 aniso.pars = c(350, 31/30)))
+                                                 aniso.pars = c(350*pi/180, 31/30)))
   colnames(wca2b_gages_anis) <- c("x_aniso", "y_aniso")  
   wca2b_gages_anis$stage_cm <- wca2b_gages$stage_cm
   
   
   wca3b_gages_anis <- as.data.frame(coords.aniso(coords = wca3b_gages[, c("x", "y")], 
-                                                 aniso.pars = c(350, 31/30)))
+                                                 aniso.pars = c(350*pi/180, 31/30)))
   colnames(wca3b_gages_anis) <- c("x_aniso", "y_aniso")  
   wca3b_gages_anis$stage_cm <- wca3b_gages$stage_cm
   
   
   pw_gages_anis <- as.data.frame(coords.aniso(coords = pw_gages[, c("x", "y")], 
-                                              aniso.pars = c(350, 31/30)))
+                                              aniso.pars = c(350*pi/180, 31/30)))
   colnames(pw_gages_anis) <- c("x_aniso", "y_aniso")  
   pw_gages_anis$stage_cm <- pw_gages$stage_cm
   
   
   other_gages_anis <- as.data.frame(coords.aniso(coords = other_gages[, c("x", "y")], 
-                                                 aniso.pars = c(350, 31/30)))
+                                                 aniso.pars = c(350*pi/180, 31/30)))
   colnames(other_gages_anis) <- c("x_aniso", "y_aniso")  
   other_gages_anis$stage_cm <- other_gages$stage_cm
   
   
   wca2a_gages_anis <- as.data.frame(coords.aniso(coords = wca2a_gages[, c("x", "y")], 
-                                                 aniso.pars = c(350, 31/30)))
+                                                 aniso.pars = c(350*pi/180, 31/30)))
   colnames(wca2a_gages_anis) <- c("x_aniso", "y_aniso")  
   wca2a_gages_anis$stage_cm <- wca2a_gages$stage_cm
   
   
   l67ext_gages_anis <- as.data.frame(coords.aniso(coords = l67ext_gages[, c("x", "y")], 
-                                                  aniso.pars = c(350, 31/30)))
+                                                  aniso.pars = c(350*pi/180, 31/30)))
   colnames(l67ext_gages_anis) <- c("x_aniso", "y_aniso")  
   l67ext_gages_anis$stage_cm <- l67ext_gages$stage_cm
   
   
   wca3a_gages_anis <- as.data.frame(coords.aniso(coords = wca3a_gages[, c("x", "y")], 
-                                                 aniso.pars = c(350, 31/30)))
+                                                 aniso.pars = c(350*pi/180, 31/30)))
   colnames(wca3a_gages_anis) <- c("x_aniso", "y_aniso")  
   wca3a_gages_anis$stage_cm <- wca3a_gages$stage_cm
   
