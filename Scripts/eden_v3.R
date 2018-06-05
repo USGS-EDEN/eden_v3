@@ -1,6 +1,6 @@
 #------------------------------------------------------------------------------
-# THIS SCRIPT CONTAINS A FUNCTION FOR RUNNING A WATER SURFACE INTERPOLATION 
-# OVER THE EDEN EXTENT (hereafter referred to as EDEN version 3)
+# RUNS A WATER SURFACE INTERPOLATION OVER THE EDEN EXTENT 
+# (referred to as EDEN version 3)
 
 # INPUT: 
 # dataframe with coordinates (named "X" and "Y") in NAD83 UTM 17N
@@ -10,8 +10,7 @@
 
 # OUTPUT:
 # Specify either a dataframe or a RasterLayer object with format argument
-# Options: "df", "raster"
-# Default is a dataframe
+# Options: format ="df" [default], or format = "raster"
 
 
 # Saira Haider 
@@ -20,88 +19,50 @@
 # US Geological Survey
 #------------------------------------------------------------------------------
 
-print("These functions require these libraries to be installed: geospt, raster, rgdal, geoR")
+print("These libraries must be installed: geospt, raster, rgdal, geoR")
 
 library(geospt)
 library(raster)
 library(rgdal)
 library(geoR)
 
-#------------------------------------------------------------------------------
-# TO SPEED UP THE INTERPOLATION, SOME PARTS OF THE INTERPOLATION MUST BE DONE
-# OUTSIDE THE FUNCTION:
-
+# Import files
 id <- read.csv("./Output/gauge_name_EArea_id.csv")
-nad_utm <- CRS("+proj=utm +zone=17 +datum=NAD83 +units=m +no_defs +ellps=GRS80 +towgs84=0,0,0")
-
-#### read in polygon shapefiles of all the subzones  ####
-wca1 <- readOGR(dsn = path.expand("./GIS/V3_subzones"),
-                layer = "EDEN_grid_poly_Jan_10_WCA1")
-wca2b <- readOGR(dsn = path.expand("./GIS/V3_subzones"),
-                 layer = "EDEN_grid_poly_Jan_10_WCA2B")
-wca3b <- readOGR(dsn = path.expand("./GIS/V3_subzones"),
-                 layer = "EDEN_grid_poly_Jan_10_WCA3B")
-pw <- readOGR(dsn = path.expand("./GIS/V3_subzones"),
-              layer = "EDEN_grid_poly_Jan_10_PW")
-other <- readOGR(dsn = path.expand("./GIS/V3_subzones"),
-                 layer = "EDEN_grid_poly_OTHER_noWCA2A_noL67ext_noWCA3A")
-wca2a <- readOGR(dsn = path.expand("./GIS/V3_subzones"),
-                 layer = "EDEN_grid_poly_WCA2A")
-l67ext <- readOGR(dsn = path.expand("./GIS/V3_subzones"),
-                  layer = "EDEN_grid_poly_east_L67ext")
-wca3a <- readOGR(dsn = path.expand("./GIS/V3_subzones"),
-                 layer = "EDEN_grid_poly_WCA3A")
-
-##### Create dataframes of the polygon centroids #####
-wca1_coords <- wca1@data[, c("X_COORD", "Y_COORD")]
-wca2b_coords <- wca2b@data[, c("X_COORD", "Y_COORD")]
-wca3b_coords <- wca3b@data[, c("X_COORD", "Y_COORD")]
-pw_coords <- pw@data[, c("X_COORD", "Y_COORD")]
-other_coords <- other@data[, c("X_COORD", "Y_COORD")]
-wca2a_coords <- wca2a@data[, c("X_COORD", "Y_COORD")]
-l67ext_coords <- l67ext@data[, c("X_COORD", "Y_COORD")]
-wca3a_coords <- wca3a@data[, c("X_COORD", "Y_COORD")]
-
-# convert to anisotropic coords for: EDEN-centroids
-wca1_anis <- as.data.frame(coords.aniso(coords = wca1_coords, 
-                                        aniso.pars = c(350*pi/180, 31/30)))
-colnames(wca1_anis) <- c("x_aniso", "y_aniso") 
-
-wca2b_anis <- as.data.frame(coords.aniso(coords = wca2b_coords, 
-                                         aniso.pars = c(350*pi/180, 31/30)))
-colnames(wca2b_anis) <- c("x_aniso", "y_aniso")
-
-wca3b_anis <- as.data.frame(coords.aniso(coords = wca3b_coords, 
-                                         aniso.pars = c(350*pi/180, 31/30)))
-colnames(wca3b_anis) <- c("x_aniso", "y_aniso")
-
-pw_anis <- as.data.frame(coords.aniso(coords = pw_coords, 
-                                      aniso.pars = c(350*pi/180, 31/30)))
-colnames(pw_anis) <- c("x_aniso", "y_aniso")
-
-other_anis <- as.data.frame(coords.aniso(coords = other_coords, 
-                                         aniso.pars = c(350*pi/180, 31/30)))
-colnames(other_anis) <- c("x_aniso", "y_aniso")
-
-wca2a_anis <- as.data.frame(coords.aniso(coords = wca2a_coords, 
-                                         aniso.pars = c(350*pi/180, 31/30)))
-colnames(wca2a_anis) <- c("x_aniso", "y_aniso")
-
-l67ext_anis <- as.data.frame(coords.aniso(coords = l67ext_coords, 
-                                          aniso.pars = c(350*pi/180, 31/30)))
-colnames(l67ext_anis) <- c("x_aniso", "y_aniso")
-
-wca3a_anis <- as.data.frame(coords.aniso(coords = wca3a_coords, 
-                                         aniso.pars = c(350*pi/180, 31/30)))
-colnames(wca3a_anis) <- c("x_aniso", "y_aniso")
+  # SHOULD THIS BE INSIDE THE FUNCTION??
 
 #------------------------------------------------------------------------------
+# Convert subarea grids to anisotropic space outside of the function
+# This speeds up how long it takes to run the function
 
+# Import polygon shapefiles of all the subareas
+subareas <- c("EDEN_grid_poly_Jan_10_WCA1",
+              "EDEN_grid_poly_WCA2A",
+              "EDEN_grid_poly_Jan_10_WCA2B",
+              "EDEN_grid_poly_WCA3A",
+              "EDEN_grid_poly_Jan_10_WCA3B",
+              "EDEN_grid_poly_east_L67ext",
+              "EDEN_grid_poly_OTHER_noWCA2A_noL67ext_noWCA3A",
+              "EDEN_grid_poly_Jan_10_PW")
+subareas <- lapply(subareas, readOGR, dsn = path.expand("./GIS/V3_subzones"))
+names(subareas) <- c("wca1", "wca2a", "wca2b", "wca3a", "wca3b", "l67ext", 
+                     "other", "pw")
 
-#####  FUNCTION RUNS RBF INTEROPLATION OF GAGES #### ---------------------
+# Create dataframes of the polygon centroids from the shapefiles
+subareas <- lapply(subareas, function(x) x@data[, c("X_COORD", "Y_COORD")] )
+
+# Create new list of subareas with polygon centroids in anisotropic space
+subareas_aniso <- lapply(subareas, function(x) as.data.frame(coords.aniso(coords = x, 
+                                                                    aniso.pars = c(350*pi/180, 31/30))))
+# Change column names
+subareas_aniso <- lapply(subareas_aniso, setNames, c("x_aniso", "y_aniso"))
+#------------------------------------------------------------------------------
+## Function that runs an radial basis function on the gages
+##   to interpolate a water surface over the EDEN extent
 
 interpolate_gages <- function(gages, format = "df"){
   print("Preparing data...")
+
+  nad_utm <- CRS("+proj=utm +zone=17 +datum=NAD83 +units=m +no_defs +ellps=GRS80 +towgs84=0,0,0")
   
   station_index <- grep("Station", colnames(gages), ignore.case = TRUE)
   colnames(gages)[station_index] <- "gage_name"
@@ -112,6 +73,7 @@ interpolate_gages <- function(gages, format = "df"){
   
   ### MERGE WITH ID COLUMN OF EVER4CAST GAGE NAMES ###
   # need rows for pseudo & semi gages; columns for EArea & both versions of gage names
+  # since the names are always changing, better to join based on location
   gages$X <- round(gages$X, digits = 1)
   gages$Y <- round(gages$Y, digits = 1)
   gages <- merge(id, gages, all.x = TRUE, by.x = c("x", "y"), by.y = c("X", "Y"))
@@ -142,12 +104,12 @@ interpolate_gages <- function(gages, format = "df"){
   # 30.14 km = dist b/t upper gage and pseudo gage 5
   gages[gages$Station == "pseudo_canal_5", ]$stage_cm <- round(upper - (slope * 30.14)) #264
   
-  #### ADD 'EArea' VALUE to the pseudo-gages ####
-  gages[gages$Station == "pseudo_canal_1", ]$EArea <- "Water Conservation Area 2A"
-  gages[gages$Station == "pseudo_canal_2", ]$EArea <- "Water Conservation Area 3A"
-  gages[gages$Station == "pseudo_canal_3", ]$EArea <- "Water Conservation Area 3A"
-  gages[gages$Station == "pseudo_canal_4", ]$EArea <- "Water Conservation Area 3A"
-  gages[gages$Station == "pseudo_canal_5", ]$EArea <- "Water Conservation Area 3A"
+  # #### ADD 'EArea' VALUE to the pseudo-gages ####
+  # gages[gages$Station == "pseudo_canal_1", ]$EArea <- "Water Conservation Area 2A"
+  # gages[gages$Station == "pseudo_canal_2", ]$EArea <- "Water Conservation Area 3A"
+  # gages[gages$Station == "pseudo_canal_3", ]$EArea <- "Water Conservation Area 3A"
+  # gages[gages$Station == "pseudo_canal_4", ]$EArea <- "Water Conservation Area 3A"
+  # gages[gages$Station == "pseudo_canal_5", ]$EArea <- "Water Conservation Area 3A"
   
   ## remove gages that don't have measurements for that day....
   no_na_values <- sum(is.na(gages$stage_cm))
@@ -208,12 +170,6 @@ interpolate_gages <- function(gages, format = "df"){
                                other_gages$EArea != "Miami Canal" |
                                other_gages$Station == "3ASW+", ]
   
-  # don't have to do this with new EDEN files?!
-  # going to include it JUST IN CASE 
-  # fix incorrect location of gage G-3567
-  # fyi: this gage NOT located in EVER4CAST files
-  gages$X[gages$Station == "G-3567"] <- 556509
-  gages$Y[gages$Station == "G-3567"] <- 2864737
   
   ##### STARTING SPATIAL ANALYSIS ########## ----------------------------------
   print("Starting spatial analysis...")
@@ -278,59 +234,59 @@ interpolate_gages <- function(gages, format = "df"){
   proj4string(wca1_gages_anis) <- nad_utm
   # run rbf
   wca1_rbf <- rbf(stage_cm ~ x_aniso + y_aniso, data = wca1_gages_anis, func = "M", 
-                  eta = 0, rho = 0, n.neigh = 8, newdata = wca1_anis) 
+                  eta = 0, rho = 0, n.neigh = 8, newdata = subareas_aniso$wca1) 
   # add output of predicted stage values to df of original coordinates
-  wca1_rbf <- cbind(wca1_coords, round(wca1_rbf$var1.pred))
+  wca1_rbf <- cbind(subareas$wca1, round(wca1_rbf$var1.pred))
   colnames(wca1_rbf)[3] <- "stage"
   
   coordinates(wca2b_gages_anis) <- ~x_aniso + y_aniso
   proj4string(wca2b_gages_anis) <- nad_utm
   wca2b_rbf <- rbf(stage_cm ~ x_aniso + y_aniso, data = wca2b_gages_anis, func = "M", 
-                   eta = 0, rho = 0, n.neigh = 8, newdata = wca2b_anis) 
-  wca2b_rbf <- cbind(wca2b_coords, round(wca2b_rbf$var1.pred))
+                   eta = 0, rho = 0, n.neigh = 8, newdata = subareas_aniso$wca2b) 
+  wca2b_rbf <- cbind(subareas$wca2b, round(wca2b_rbf$var1.pred))
   colnames(wca2b_rbf)[3] <- "stage"
   
   coordinates(wca3b_gages_anis) <- ~x_aniso + y_aniso
   proj4string(wca3b_gages_anis) <- nad_utm
   wca3b_rbf <- rbf(stage_cm ~ x_aniso + y_aniso, data = wca3b_gages_anis, func = "M", 
-                   eta = 0, rho = 0, n.neigh = 8, newdata = wca3b_anis) 
-  wca3b_rbf <- cbind(wca3b_coords, round(wca3b_rbf$var1.pred))
+                   eta = 0, rho = 0, n.neigh = 8, newdata = subareas_aniso$wca3b) 
+  wca3b_rbf <- cbind(subareas$wca3b, round(wca3b_rbf$var1.pred))
   colnames(wca3b_rbf)[3] <- "stage"
   
   # NOTE: only 3 neighbors here
   coordinates(pw_gages_anis) <- ~x_aniso + y_aniso
   proj4string(pw_gages_anis) <- nad_utm
   pw_rbf <- rbf(stage_cm ~ x_aniso + y_aniso, data = pw_gages_anis, func = "M", 
-                eta = 0, rho =0, n.neigh = 3, newdata = pw_anis) 
-  pw_rbf <- cbind(pw_coords, round(pw_rbf$var1.pred))
+                eta = 0, rho =0, n.neigh = 3, newdata = subareas_aniso$pw) 
+  pw_rbf <- cbind(subareas$pw, round(pw_rbf$var1.pred))
   colnames(pw_rbf)[3] <- "stage"
   
   coordinates(other_gages_anis) <- ~x_aniso + y_aniso
   proj4string(other_gages_anis) <- nad_utm
   other_rbf <- rbf(stage_cm ~ x_aniso + y_aniso, data = other_gages_anis, func = "M", 
-                   eta = 0, rho = 0, n.neigh = 8, newdata = other_anis) 
-  other_rbf <- cbind(other_coords, round(other_rbf$var1.pred))
+                   eta = 0, rho = 0, n.neigh = 8, newdata = subareas_aniso$other) 
+  other_rbf <- cbind(subareas$other, round(other_rbf$var1.pred))
   colnames(other_rbf)[3] <- "stage"
   
   coordinates(wca2a_gages_anis) <- ~x_aniso + y_aniso
   proj4string(wca2a_gages_anis) <- nad_utm
   wca2a_rbf <- rbf(stage_cm ~ x_aniso + y_aniso, data = wca2a_gages_anis, func = "M", 
-                   eta = 0, rho = 0, n.neigh = 8, newdata = wca2a_anis) 
-  wca2a_rbf <- cbind(wca2a_coords, round(wca2a_rbf$var1.pred))
+                   eta = 0, rho = 0, n.neigh = 8, newdata = subareas_aniso$wca2a) 
+  wca2a_rbf <- cbind(subareas$wca2a, round(wca2a_rbf$var1.pred))
   colnames(wca2a_rbf)[3] <- "stage"
   
   coordinates(l67ext_gages_anis) <- ~x_aniso + y_aniso
   proj4string(l67ext_gages_anis) <- nad_utm
   l67ext_rbf <- rbf(stage_cm ~ x_aniso + y_aniso, data = l67ext_gages_anis, func = "M", 
-                    eta = 0, rho = 0, n.neigh = 8, newdata = l67ext_anis) 
-  l67ext_rbf <- cbind(l67ext_coords, round(l67ext_rbf$var1.pred))
+                    eta = 0, rho = 0, n.neigh = 8, newdata = subareas_aniso$l67ext) 
+  l67ext_rbf <- cbind(subareas$l67ext, round(l67ext_rbf$var1.pred))
   colnames(l67ext_rbf)[3] <- "stage"
   
   coordinates(wca3a_gages_anis) <- ~x_aniso + y_aniso
   proj4string(wca3a_gages_anis) <- nad_utm
   wca3a_rbf <- rbf(stage_cm ~ x_aniso + y_aniso, data = wca3a_gages_anis, func = "M", 
-                   eta = 0, rho = 0, n.neigh = 8, newdata = wca3a_anis) 
-  wca3a_rbf <- cbind(wca3a_coords, round(wca3a_rbf$var1.pred))
+                   eta = 0, rho = 0, n.neigh = 8, newdata = subareas_aniso$wca3a) 
+  wca3a_rbf <- cbind(subareas$wca3a, round(wca3a_rbf$var1.pred))
   colnames(wca3a_rbf)[3] <- "stage"
   
   ####### Combine together ###### -------------------------
