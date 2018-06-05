@@ -14,7 +14,8 @@ sim_list[[1]] <- sim_list[[1]][Date <= 20180103, ]
 
 ### For running eden_v3.R
 source("./Scripts/eden_v3.R")
-test_gages <- fread("../EDEN/gage_data/2007_q3_DM_v2r1/20070701_median.txt")
+test_gages <- fread("../EDEN/Data/gage_data/2007_q3_DM_v2r1/20070701_median.txt")
+gages <- fread("../EDEN/Data/gage_data/2007_q3_DM_v2r1/20070701_median.txt")
 v3 <- interpolate_gauges(test_gages)
 v3
 v3 <- interpolate_gauges(test_gages, format = "df")
