@@ -17,9 +17,9 @@ library(data.table)
 #------------------------------------------------------------------------------
 # USER INPUTS
 
-sim_medians_folder <- "../Ever4Cast/e4c_v1.1.2_forecast_stage_2018/spa_central_tendency_20180101_20180630/20180104_spa_central_tendency_20180101_20180630_daily_median_data"
-output_folder <- "../Ever4Cast//eden_forecast2018/netcdfs/"
-output_csv_folder <- "../Ever4Cast/eden_forecast2018/csvs/"
+sim_medians_folder <- "../Ever4Cast/Output/Ever4Cast_app/march2018/spa_central_tendency_20180301_20180831/20180309_spa_central_tendency_20180301_20180831_daily_median_data"
+output_folder <- "../Ever4Cast/Output/EDEN/march2018/netcdfs/"
+output_csv_folder <- "../Ever4Cast/Output/EDEN/march2018/csvs/"
 
 #------------------------------------------------------------------------------
 # Set up netcdf info 
@@ -77,7 +77,7 @@ for(i in 1:length(sims)){              # i <- 1
   
   # Run simulation for each day
   print(paste("Simulation ", i, " of ", length(sims)))
-  sim_stage_list <- lapply(daily_list, interpolate_gauges)
+  sim_stage_list <- lapply(daily_list, interpolate_gages)
 
   # Add column for date
   sim_stage <- rbindlist(sim_stage_list)
