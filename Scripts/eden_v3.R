@@ -131,6 +131,14 @@ interpolate_gages <- function(input_gages, format = "df"){
   print(paste0("The number of missing gages on this day is: ", no_na_values))
   print(paste0("Missing data are from gage stations: ", gages[is.na(gages$stage_cm), ]$Station))
   gages <- na.omit(gages)
+
+  ## --------------------------------------------------------------------------
+  # Convert gage data to anisotropic coordinates
+
+  gages_aniso <- as.data.frame(coords.aniso(coords = gages[, c("x_nad83_utm17n", "y_nad83_utm17n")], 
+                                            aniso.pars = c(350*pi/180, 31/30)))
+  colnames(gages_aniso) <- c("x_aniso", "y_aniso")  
+  gages <- cbind(gages, gages_aniso)
   
   ## --------------------------------------------------------------------------
   # Create dataframe for each subzone classification
@@ -144,132 +152,54 @@ interpolate_gages <- function(input_gages, format = "df"){
   l67ext_gages <- gages[gages$l67ext == 1, ]
   other_gages <- gages[gages$other == 1, ]
                          
-  ##### STARTING SPATIAL ANALYSIS ########## ----------------------------------
-  print("Starting spatial analysis...")
+  ## --------------------------------------------------------------------------
+  print("Running RBF interpolation...")
   
-  ####### CONVERT both gages and EDEN-centroids to anisotropic coords #########
+  # Function that takes gages from a subarea and runs the RBF function
+  run_eden_rbf <- function(subarea_df, n_neigh, subarea_name){
+    # subarea_df <- wca1_gages; n_neigh = 8; subarea_name <- 'wca1'
+    
+    subarea_index <- grep(subarea_name, names(subareas_aniso))
+    
+    # Convert df to SpatialPoints df
+    coordinates(subarea_df) <- ~x_aniso + y_aniso
+    proj4string(subarea_df) <- CRS("+proj=utm +zone=17 +datum=NAD83 +units=m +no_defs +ellps=GRS80 +towgs84=0,0,0")
+    
+    # Run RBF
+    subarea_rbf <- rbf(stage_cm ~ x_aniso + y_aniso, 
+                    data = subarea_df, 
+                    func = "M", 
+                    eta = 0, 
+                    rho = 0, 
+                    n.neigh = n_neigh, 
+                    newdata = subareas_aniso[[subarea_index]]) 
+    
+    # Final clean up
+    subarea_rbf <- cbind(subareas[[subarea_index]], round(subarea_rbf$var1.pred))
+    colnames(subarea_rbf)[3] <- "stage"
+    
+    return(subarea_rbf)
+  }
+    
+  wca1_rbf <- run_eden_rbf(wca1_gages, 8, "wca1")
+  wca2a_rbf <- run_eden_rbf(wca2a_gages, 8, "wca2a")
+  wca2b_rbf <- run_eden_rbf(wca2b_gages, 8, "wca2b")
+  wca3a_rbf <- run_eden_rbf(wca3a_gages, 8, "wca3a")
+  wca3b_rbf <- run_eden_rbf(wca3b_gages, 8, "wca3b")
+  # TODO when running simulations for ever4cast, n_neigh has to be reduced to 3 - include this in fxn input for specfiying ever4cast
+  pw_rbf <- run_eden_rbf(pw_gages, 5, "pw")
+  l67ext_rbf <- run_eden_rbf(l67ext_gages, 8, "l67ext")
+  other_rbf <- run_eden_rbf(other_gages, 8, "other")
   
-  # conver to anisotropic coords for: gages
-  wca1_gages_anis <- as.data.frame(coords.aniso(coords = wca1_gages[, c("x_nad83_utm17n", "y_nad83_utm17n")], 
-                                                aniso.pars = c(350*pi/180, 31/30)))
-  # new & identical coord column names
-  colnames(wca1_gages_anis) <- c("x_aniso", "y_aniso")  
-  # add stage values back to gage df
-  wca1_gages_anis$stage_cm <- wca1_gages$stage_cm
+  ## --------------------------------------------------------------------------
+  # Bind everything together and conver to raster if specified
   
-  
-  wca2b_gages_anis <- as.data.frame(coords.aniso(coords = wca2b_gages[, c("x_nad83_utm17n", "y_nad83_utm17n")], 
-                                                 aniso.pars = c(350*pi/180, 31/30)))
-  colnames(wca2b_gages_anis) <- c("x_aniso", "y_aniso")  
-  wca2b_gages_anis$stage_cm <- wca2b_gages$stage_cm
-  
-  
-  wca3b_gages_anis <- as.data.frame(coords.aniso(coords = wca3b_gages[, c("x_nad83_utm17n", "y_nad83_utm17n")], 
-                                                 aniso.pars = c(350*pi/180, 31/30)))
-  colnames(wca3b_gages_anis) <- c("x_aniso", "y_aniso")  
-  wca3b_gages_anis$stage_cm <- wca3b_gages$stage_cm
-  
-  
-  pw_gages_anis <- as.data.frame(coords.aniso(coords = pw_gages[, c("x_nad83_utm17n", "y_nad83_utm17n")], 
-                                              aniso.pars = c(350*pi/180, 31/30)))
-  colnames(pw_gages_anis) <- c("x_aniso", "y_aniso")  
-  pw_gages_anis$stage_cm <- pw_gages$stage_cm
-  
-  
-  other_gages_anis <- as.data.frame(coords.aniso(coords = other_gages[, c("x_nad83_utm17n", "y_nad83_utm17n")], 
-                                                 aniso.pars = c(350*pi/180, 31/30)))
-  colnames(other_gages_anis) <- c("x_aniso", "y_aniso")  
-  other_gages_anis$stage_cm <- other_gages$stage_cm
-  
-  
-  wca2a_gages_anis <- as.data.frame(coords.aniso(coords = wca2a_gages[, c("x_nad83_utm17n", "y_nad83_utm17n")], 
-                                                 aniso.pars = c(350*pi/180, 31/30)))
-  colnames(wca2a_gages_anis) <- c("x_aniso", "y_aniso")  
-  wca2a_gages_anis$stage_cm <- wca2a_gages$stage_cm
-  
-  
-  l67ext_gages_anis <- as.data.frame(coords.aniso(coords = l67ext_gages[, c("x_nad83_utm17n", "y_nad83_utm17n")], 
-                                                  aniso.pars = c(350*pi/180, 31/30)))
-  colnames(l67ext_gages_anis) <- c("x_aniso", "y_aniso")  
-  l67ext_gages_anis$stage_cm <- l67ext_gages$stage_cm
-  
-  
-  wca3a_gages_anis <- as.data.frame(coords.aniso(coords = wca3a_gages[, c("x_nad83_utm17n", "y_nad83_utm17n")], 
-                                                 aniso.pars = c(350*pi/180, 31/30)))
-  colnames(wca3a_gages_anis) <- c("x_aniso", "y_aniso")  
-  wca3a_gages_anis$stage_cm <- wca3a_gages$stage_cm
-  
-  ######### PERFORM RBF INTERPOLATION ######### -------------------------------
-  print("Running RBF spatial interpolation...")
-  nad_utm <- CRS("+proj=utm +zone=17 +datum=NAD83 +units=m +no_defs +ellps=GRS80 +towgs84=0,0,0")
-  
-  # convert gage data to spatial-points-dataframe for the RBF interpolation
-  coordinates(wca1_gages_anis) <- ~x_aniso + y_aniso
-  proj4string(wca1_gages_anis) <- nad_utm
-  # run rbf
-  wca1_rbf <- rbf(stage_cm ~ x_aniso + y_aniso, data = wca1_gages_anis, func = "M", 
-                  eta = 0, rho = 0, n.neigh = 8, newdata = subareas_aniso$wca1) 
-  # add output of predicted stage values to df of original coordinates
-  wca1_rbf <- cbind(subareas$wca1, round(wca1_rbf$var1.pred))
-  colnames(wca1_rbf)[3] <- "stage"
-  
-  coordinates(wca2b_gages_anis) <- ~x_aniso + y_aniso
-  proj4string(wca2b_gages_anis) <- nad_utm
-  wca2b_rbf <- rbf(stage_cm ~ x_aniso + y_aniso, data = wca2b_gages_anis, func = "M", 
-                   eta = 0, rho = 0, n.neigh = 8, newdata = subareas_aniso$wca2b) 
-  wca2b_rbf <- cbind(subareas$wca2b, round(wca2b_rbf$var1.pred))
-  colnames(wca2b_rbf)[3] <- "stage"
-  
-  coordinates(wca3b_gages_anis) <- ~x_aniso + y_aniso
-  proj4string(wca3b_gages_anis) <- nad_utm
-  wca3b_rbf <- rbf(stage_cm ~ x_aniso + y_aniso, data = wca3b_gages_anis, func = "M", 
-                   eta = 0, rho = 0, n.neigh = 8, newdata = subareas_aniso$wca3b) 
-  wca3b_rbf <- cbind(subareas$wca3b, round(wca3b_rbf$var1.pred))
-  colnames(wca3b_rbf)[3] <- "stage"
-  
-  # NOTE: only 3 neighbors here
-  coordinates(pw_gages_anis) <- ~x_aniso + y_aniso
-  proj4string(pw_gages_anis) <- nad_utm
-  pw_rbf <- rbf(stage_cm ~ x_aniso + y_aniso, data = pw_gages_anis, func = "M", 
-                eta = 0, rho =0, n.neigh = 3, newdata = subareas_aniso$pw) 
-  pw_rbf <- cbind(subareas$pw, round(pw_rbf$var1.pred))
-  colnames(pw_rbf)[3] <- "stage"
-  
-  coordinates(other_gages_anis) <- ~x_aniso + y_aniso
-  proj4string(other_gages_anis) <- nad_utm
-  other_rbf <- rbf(stage_cm ~ x_aniso + y_aniso, data = other_gages_anis, func = "M", 
-                   eta = 0, rho = 0, n.neigh = 8, newdata = subareas_aniso$other) 
-  other_rbf <- cbind(subareas$other, round(other_rbf$var1.pred))
-  colnames(other_rbf)[3] <- "stage"
-  
-  coordinates(wca2a_gages_anis) <- ~x_aniso + y_aniso
-  proj4string(wca2a_gages_anis) <- nad_utm
-  wca2a_rbf <- rbf(stage_cm ~ x_aniso + y_aniso, data = wca2a_gages_anis, func = "M", 
-                   eta = 0, rho = 0, n.neigh = 8, newdata = subareas_aniso$wca2a) 
-  wca2a_rbf <- cbind(subareas$wca2a, round(wca2a_rbf$var1.pred))
-  colnames(wca2a_rbf)[3] <- "stage"
-  
-  coordinates(l67ext_gages_anis) <- ~x_aniso + y_aniso
-  proj4string(l67ext_gages_anis) <- nad_utm
-  l67ext_rbf <- rbf(stage_cm ~ x_aniso + y_aniso, data = l67ext_gages_anis, func = "M", 
-                    eta = 0, rho = 0, n.neigh = 8, newdata = subareas_aniso$l67ext) 
-  l67ext_rbf <- cbind(subareas$l67ext, round(l67ext_rbf$var1.pred))
-  colnames(l67ext_rbf)[3] <- "stage"
-  
-  coordinates(wca3a_gages_anis) <- ~x_aniso + y_aniso
-  proj4string(wca3a_gages_anis) <- nad_utm
-  wca3a_rbf <- rbf(stage_cm ~ x_aniso + y_aniso, data = wca3a_gages_anis, func = "M", 
-                   eta = 0, rho = 0, n.neigh = 8, newdata = subareas_aniso$wca3a) 
-  wca3a_rbf <- cbind(subareas$wca3a, round(wca3a_rbf$var1.pred))
-  colnames(wca3a_rbf)[3] <- "stage"
-  
-  ####### Combine together ###### -------------------------
   alt_eden <- rbind(wca1_rbf, wca2b_rbf, wca3b_rbf, pw_rbf, other_rbf, wca2a_rbf,
                     l67ext_rbf, wca3a_rbf)
   
   if(format == "raster"){
     coordinates(alt_eden) <- ~X_COORD + Y_COORD
-    proj4string(alt_eden) <- nad_utm
+    proj4string(alt_eden) <- CRS("+proj=utm +zone=17 +datum=NAD83 +units=m +no_defs +ellps=GRS80 +towgs84=0,0,0")
     gridded(alt_eden) <- TRUE
     alt_eden <- raster(alt_eden)
   }
