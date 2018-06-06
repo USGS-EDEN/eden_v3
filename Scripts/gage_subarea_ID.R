@@ -38,7 +38,6 @@ merge_gages <- merge(earea_gages, gages,
 #          locations of these were drawn from v2 pseudo-boundaries9
 #   2 gages that have been discontinued from the surface: WCA2E4 & WCA2F1
 #          keeping them because these are still used in Ever4Cast
-#   ADD PARAMETER IN FUNCTION TO SPECIFY THIS USE?? ------------------------------------------------------
 #   4 gages that are found in the _Ex files:
 #          pS12D_DN, pNP202NE1 (in two different locations), pBCA19+LO1
 #          as are found in: 20170710_median_Ex
@@ -134,6 +133,8 @@ colnames(merge_gages)[3:4] <- c("x_nad83_utm17n", "y_nad83_utm17n")
 
 # Note: Some gages are classified into more than one subarea
 
+merge_gages[, c("wca1", "wca2a", "wca2b", "wca3a", "wca3b","l67ext", "pw", "other") := 0]
+
 merge_gages[EArea == "Water Conservation Area 1" | 
             EArea == "L39 Canal" | 
             EArea == "L40 Canal", 
@@ -190,39 +191,21 @@ merge_gages[Station == "NESRS1" |
 merge_gages[EArea == "Pennsuco Wetlands", 
             pw := 1] 
 
-# STOPPED HERE
+merge_gages[rowSums(merge_gages[, 5:11], na.rm = TRUE) < 1, ]$other <- 1
+
+# Add gages to 'other' that are also in L67ext
 merge_gages[Station == "EDEN_6" |
             Station == "3ASW+" |
             Station == "L28S1+" |
             Station == "L28S2+",
             other := 1]
 
-# Add something here that sums up the subzone columns, if == 0, then other = 1
-# Still need to double check that sorting is done correctly
-# And need to go through notebook and catch ones that are in more than one subzone
+# -----------------------------------------------------------------------------
+# Take a look at the file & export
 
+colSums(merge_gages[, 5:12])
+nrow(merge_gages)
 
-# first: create the 'other' subzone as usual 
-# (the one ifelse command has this part: & gages$Station != "pBCA19+LO1" could try running it that way)
-merge_gages[EArea != "Water Conservation Area 1" &
-            EArea != "L39 Canal" &
-            EArea != "L40 Canal"&
-            EArea != "Water Conservation Area 2B" &
-            EArea != "L38E Canal" &
-            EArea != "Water Conservation Area 3B" &
-            EArea != "Pennsuco Wetlands" &
-            EArea != "Water Conservation Area 2A" &
-            Station != "S7-T" &
-            EArea != "L30 Canal" &
-            Station != "S31M-H" |
-            Station == "S9A-T", ]
-# second, remove certain gages east of l67-ext that could influence 'other' surface
-other_gages <- other_gages[other_gages$Station != "NESRS1" & other_gages$Station != "NESRS2" &
-                             other_gages$Station != "G-3576" & other_gages$Station != "G-3574" &
-                             other_gages$Station != "S334-H" & other_gages$Station != "S334-T" &
-                             other_gages$Station != "S333-T", ]
-#third, remove gages that are in WCA3A
-other_gages <- other_gages[other_gages$EArea != "Water Conservation Area 3A" &
-                             other_gages$EArea != "Tamiami Canal" & 
-                             other_gages$EArea != "Miami Canal" |
-                             other_gages$Station == "3ASW+", ]
+write.csv(merge_gages, "./Output/gage_subareaID_6June2018.csv", row.names = FALSE)
+  # Output from 6 June 2018 uses EDEN data downloaded from the website on 28 Feb 2018
+
