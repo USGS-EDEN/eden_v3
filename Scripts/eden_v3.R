@@ -2,13 +2,13 @@
 # RUNS A WATER SURFACE INTERPOLATION OVER THE EDEN EXTENT 
 # (referred to as EDEN version 3)
 
-# INPUT: 
+# INPUT of FXN: 
 # dataframe with coordinates (named "X" and "Y") in NAD83 UTM 17N
 # With median water level (stage) in cm for 1 day
 # Column that contains water level must have the word "median" in the name
 # Column that contains the gage names must have "station" in the name
 
-# OUTPUT:
+# OUTPUT of FXN:
 # Specify either a dataframe or a RasterLayer object with format argument
 # Options: format ="df" [default], or format = "raster"
 
@@ -27,8 +27,8 @@ library(rgdal)
 library(geoR)
 
 # Import files
-id <- read.csv("./Output/gauge_name_EArea_id.csv")
-  # SHOULD THIS BE INSIDE THE FUNCTION??
+id <- read.csv("./Output/gage_subareaID_6June2018.csv", stringsAsFactors = FALSE)
+  # TODO SHOULD THIS BE INSIDE THE FUNCTION to reduce workspace clutter?
 
 #------------------------------------------------------------------------------
 # Convert subarea grids to anisotropic space outside of the function
@@ -55,128 +55,102 @@ subareas_aniso <- lapply(subareas, function(x) as.data.frame(coords.aniso(coords
                                                                     aniso.pars = c(350*pi/180, 31/30))))
 # Change column names
 subareas_aniso <- lapply(subareas_aniso, setNames, c("x_aniso", "y_aniso"))
+
 #------------------------------------------------------------------------------
 ## Function that runs an radial basis function on the gages
 ##   to interpolate a water surface over the EDEN extent
 
-interpolate_gages <- function(gages, format = "df"){
+# TODO: add input parameter to specify interp is for ever4cast bc:
+#   2 gages that have been discontinued from eden surface: WCA2E4 & WCA2F1??
+
+interpolate_gages <- function(input_gages, format = "df"){
+  
+  ## --------------------------------------------------------------------------
+  # Add subarea classifications to input gage data
+  
   print("Preparing data...")
 
-  nad_utm <- CRS("+proj=utm +zone=17 +datum=NAD83 +units=m +no_defs +ellps=GRS80 +towgs84=0,0,0")
+  # Change input station colname to avoid errors caused by identical colnames
+  station_index <- grep("Station", colnames(input_gages), ignore.case = TRUE)
+  colnames(input_gages)[station_index] <- "input_station_name"
+
+  # Merge with ID dataframe to add subarea classification
+  # - use coordinates to merge bc they change less often than station names
+  input_gages$X <- round(input_gages$X, digits = 1)
+  input_gages$Y <- round(input_gages$Y, digits = 1)  
+  gages <- merge(id, input_gages, 
+                 all.x = TRUE, 
+                 by.x = c("x_nad83_utm17n", "y_nad83_utm17n"), 
+                 by.y = c("X", "Y"))
+
   
-  station_index <- grep("Station", colnames(gages), ignore.case = TRUE)
-  colnames(gages)[station_index] <- "gage_name"
-  
-  if("EArea" %in% colnames(gages)) {
-    gages <- within(gages, rm("EArea"))
-  }
-  
-  ### MERGE WITH ID COLUMN OF EVER4CAST GAGE NAMES ###
-  # need rows for pseudo & semi gages; columns for EArea & both versions of gage names
-  # since the names are always changing, better to join based on location
-  gages$X <- round(gages$X, digits = 1)
-  gages$Y <- round(gages$Y, digits = 1)
-  gages <- merge(id, gages, all.x = TRUE, by.x = c("x", "y"), by.y = c("X", "Y"))
+  # Rename column with water level data
   stage_index <- grep("median", colnames(gages), ignore.case = TRUE) 
   colnames(gages)[stage_index] <- "stage_cm"
-  gages <- gages[, c("x", "y", "Station", "EArea", "stage_cm")]
   
-  #### ADD PSEUDO- & SEMI- GAGE STAGE VALUES ####
-  # add 4 semi-gages stage values (2 have the same name)
+  # Remove unnecessary columns
+  gages <- gages[, c("x_nad83_utm17n", "y_nad83_utm17n", "stage_cm", "Station",
+                     "wca1", "wca2a", "wca2b", "wca3a", "wca3b","l67ext", "pw", "other")]
+  
+  ## --------------------------------------------------------------------------
+  # Add water level values for the 9 'fake' or 'pseudo' gages
+  
+  # Add values for the 4 pseudo-gages that were generated from the _Ex files
+  # - 2 have the same name
   gages[gages$Station == "pBCA19+LO1", ]$stage_cm <- gages[gages$Station == "BCA19+", ]$stage_cm
   gages[gages$Station == "pNP202NE1", ]$stage_cm <- gages[gages$Station == "NP202", ]$stage_cm
   gages[gages$Station == "pS12D_DN", ]$stage_cm <- gages[gages$Station == "S12D_DN", ]$stage_cm
   
-  # add 5 pseudo-gage stage values
-  # the one on the wca1 - wca2a border reduces error in the northern pt
+  
+  # Add water level values for the 5 'pseudo' gages
+  # - these are the ones manually determined to increase interpolation accuracy
+  # - locations are based on pseudo-canal borders from EDEN_v2
+  
+  # This one on WCA1 - WCA2A border reduces error in the northern pt
   gages[gages$Station == "pseudo_canal_1", ]$stage_cm <- gages[gages$Station == "S10D_DN", ]$stage_cm
-  # create linear eqns for the four on the wca3a border
-  # adding these reduce error on the 3A side
+  
+  # Create linear eqns for the four on the WCA3A/B border
+  # - adding these reduces error on the 3A side
   upper <- gages[gages$Station == "S151+H", ]$stage_cm
   lower <- gages[gages$Station == "S333-H", ]$stage_cm
-  slope <- (upper - lower) / 32.57 # 32.57 km between the two gages (as canal distance, not straight-line)
+  # 32.57 km between the two gages (as canal distance, not straight-line)
+  slope <- (upper - lower) / 32.57 
+  
   # 13.48 km = dist b/t upper gage and pseudo gage 2
-  gages[gages$Station == "pseudo_canal_2", ]$stage_cm <- round(upper - (slope * 13.48)) #279
+  gages[gages$Station == "pseudo_canal_2", ]$stage_cm <- round(upper - (slope * 13.48))
   # 15.88 km = dist b/t upper gage and pseudo gage 3
-  gages[gages$Station == "pseudo_canal_3", ]$stage_cm <- round(upper - (slope * 15.88)) #277
+  gages[gages$Station == "pseudo_canal_3", ]$stage_cm <- round(upper - (slope * 15.88))
   # 25.28 km = dist b/t upper gage and pseudo gage 4
-  gages[gages$Station == "pseudo_canal_4", ]$stage_cm <- round(upper - (slope * 25.28)) #268
+  gages[gages$Station == "pseudo_canal_4", ]$stage_cm <- round(upper - (slope * 25.28))
   # 30.14 km = dist b/t upper gage and pseudo gage 5
-  gages[gages$Station == "pseudo_canal_5", ]$stage_cm <- round(upper - (slope * 30.14)) #264
+  gages[gages$Station == "pseudo_canal_5", ]$stage_cm <- round(upper - (slope * 30.14))
   
-  # #### ADD 'EArea' VALUE to the pseudo-gages ####
-  gages[gages$Station == "pseudo_canal_1", ]$EArea <- "Water Conservation Area 2A"
-  gages[gages$Station == "pseudo_canal_2", ]$EArea <- "Water Conservation Area 3A"
-  gages[gages$Station == "pseudo_canal_3", ]$EArea <- "Water Conservation Area 3A"
-  gages[gages$Station == "pseudo_canal_4", ]$EArea <- "Water Conservation Area 3A"
-  gages[gages$Station == "pseudo_canal_5", ]$EArea <- "Water Conservation Area 3A"
-  
-  ## remove gages that don't have measurements for that day....
+  ## --------------------------------------------------------------------------
+  ## Remove gages that don't have measurements for that day
   no_na_values <- sum(is.na(gages$stage_cm))
   print(paste0("The number of missing gages on this day is: ", no_na_values))
+  print(paste0("Missing data are from gage stations: ", gages[is.na(gages$stage_cm), ]$Station))
   gages <- na.omit(gages)
   
-  # SORT GAGES INTO SUBZONES --------------------------------------------------
-  # selection criteria were found in RBFInterpolation.py
-  # as well as determined manually by examining output
+  ## --------------------------------------------------------------------------
+  # Create dataframe for each subzone classification
   
-  wca1_gages <- gages[gages$EArea == "Water Conservation Area 1" | gages$EArea == "L39 Canal" | gages$EArea == "L40 Canal", ]
-  wca2b_gages <- gages[gages$EArea == "Water Conservation Area 2B" | gages$EArea == "L38E Canal" & gages$Station != "S7-T", ]
-  wca3b_gages <- gages[gages$EArea == "Water Conservation Area 3B" & gages$Station != "S9A-T" & gages$Station != "SITE_69E", ] 
-  pw_gages <- gages[gages$EArea == "Pennsuco Wetlands" & gages$Station != "S380-H" & gages$Station != "NWWF", ] 
-  wca2a_gages <- gages[gages$EArea == "Water Conservation Area 2A" | 
-                         gages$Station == "S7-T", ] 
-  wca3a_gages <- gages[gages$EArea == "Water Conservation Area 3A" | 
-                         gages$EArea == "Miami Canal" |
-                         gages$EArea == "L28 Canal" |
-                         gages$EArea == "Tamiami Canal" |
-                         gages$Station == "EDEN_6" |
-                         gages$EArea == "L28 Interceptor Canal",]
-  # gages for new subzone east of L67-ext:
-  l67ext_gages <- gages[gages$Station == "S334-H" | gages$Station == "S333-T" | 
-                          gages$Station == "NESRS1" | gages$Station == "NESRS2" |
-                          gages$Station == "G-3578" | gages$Station == "G-3577" |
-                          gages$Station == "G-3575" | gages$Station == "G-3576" |
-                          gages$Station == "G-3574" | gages$Station == "G-3272" |
-                          gages$Station == "G-3273" | gages$Station == "ANGEL.S" |
-                          gages$Station == "G-596"| gages$Station == "NESRS4" |
-                          gages$Station == "pNP202NE1" | gages$Station == "G-3626" |
-                          gages$Station == "G-3628" | gages$Station == "G-3437" |
-                          gages$Station == "RG1" | gages$Station == "RG3" |
-                          gages$Station == "RG2" | gages$Station == "NP206" |
-                          gages$Station == "P33" | gages$Station == "NP202" |
-                          gages$Station == "NP203", ]
-  
-  # 'other' subzone more complicated to sort
-  # first: create the 'other' subzone as usual 
-  # (the one ifelse command has this part: & gages$Station != "pBCA19+LO1" could try running it that way too)
-  other_gages <- gages[gages$EArea != "Water Conservation Area 1" & gages$EArea != "L39 Canal" & 
-                         gages$EArea != "L40 Canal"  & gages$EArea != "Water Conservation Area 2B" &
-                         gages$EArea != "L38E Canal" & gages$EArea != "Water Conservation Area 3B" & 
-                         gages$EArea != "Pennsuco Wetlands" & gages$EArea != "Water Conservation Area 2A" & 
-                         gages$Station != "S7-T" & gages$EArea != "L30 Canal" & 
-                         gages$Station != "S31M-H" & gages$Station != "S380-H" &
-                         gages$Station != "NWWF" | gages$Station == "SITE_69E" |
-                         gages$Station == "S9A-T", ]
-  # second, remove certain gages east of l67-ext that could influence 'other' surface
-  other_gages <- other_gages[other_gages$Station != "NESRS1" & other_gages$Station != "NESRS2" &
-                               other_gages$Station != "G-3576" & other_gages$Station != "G-3574" &
-                               other_gages$Station != "S334-H" & other_gages$Station != "S334-T" &
-                               other_gages$Station != "S333-T", ]
-  # third, remove gages that are in WCA3A
-  other_gages <- other_gages[other_gages$EArea != "Water Conservation Area 3A" &
-                               other_gages$EArea != "Tamiami Canal" & 
-                               other_gages$EArea != "Miami Canal" |
-                               other_gages$Station == "3ASW+", ]
-  
-  
+  wca1_gages <- gages[gages$wca1 == 1, ]
+  wca2a_gages <- gages[gages$wca2a == 1, ]
+  wca2b_gages <- gages[gages$wca2b == 1, ]
+  wca3a_gages <- gages[gages$wca3a == 1, ]
+  wca3b_gages <- gages[gages$wca3b == 1, ]
+  pw_gages <- gages[gages$pw == 1, ]
+  l67ext_gages <- gages[gages$l67ext == 1, ]
+  other_gages <- gages[gages$other == 1, ]
+                         
   ##### STARTING SPATIAL ANALYSIS ########## ----------------------------------
   print("Starting spatial analysis...")
   
   ####### CONVERT both gages and EDEN-centroids to anisotropic coords #########
   
   # conver to anisotropic coords for: gages
-  wca1_gages_anis <- as.data.frame(coords.aniso(coords = wca1_gages[, c("x", "y")], 
+  wca1_gages_anis <- as.data.frame(coords.aniso(coords = wca1_gages[, c("x_nad83_utm17n", "y_nad83_utm17n")], 
                                                 aniso.pars = c(350*pi/180, 31/30)))
   # new & identical coord column names
   colnames(wca1_gages_anis) <- c("x_aniso", "y_aniso")  
@@ -184,49 +158,50 @@ interpolate_gages <- function(gages, format = "df"){
   wca1_gages_anis$stage_cm <- wca1_gages$stage_cm
   
   
-  wca2b_gages_anis <- as.data.frame(coords.aniso(coords = wca2b_gages[, c("x", "y")], 
+  wca2b_gages_anis <- as.data.frame(coords.aniso(coords = wca2b_gages[, c("x_nad83_utm17n", "y_nad83_utm17n")], 
                                                  aniso.pars = c(350*pi/180, 31/30)))
   colnames(wca2b_gages_anis) <- c("x_aniso", "y_aniso")  
   wca2b_gages_anis$stage_cm <- wca2b_gages$stage_cm
   
   
-  wca3b_gages_anis <- as.data.frame(coords.aniso(coords = wca3b_gages[, c("x", "y")], 
+  wca3b_gages_anis <- as.data.frame(coords.aniso(coords = wca3b_gages[, c("x_nad83_utm17n", "y_nad83_utm17n")], 
                                                  aniso.pars = c(350*pi/180, 31/30)))
   colnames(wca3b_gages_anis) <- c("x_aniso", "y_aniso")  
   wca3b_gages_anis$stage_cm <- wca3b_gages$stage_cm
   
   
-  pw_gages_anis <- as.data.frame(coords.aniso(coords = pw_gages[, c("x", "y")], 
+  pw_gages_anis <- as.data.frame(coords.aniso(coords = pw_gages[, c("x_nad83_utm17n", "y_nad83_utm17n")], 
                                               aniso.pars = c(350*pi/180, 31/30)))
   colnames(pw_gages_anis) <- c("x_aniso", "y_aniso")  
   pw_gages_anis$stage_cm <- pw_gages$stage_cm
   
   
-  other_gages_anis <- as.data.frame(coords.aniso(coords = other_gages[, c("x", "y")], 
+  other_gages_anis <- as.data.frame(coords.aniso(coords = other_gages[, c("x_nad83_utm17n", "y_nad83_utm17n")], 
                                                  aniso.pars = c(350*pi/180, 31/30)))
   colnames(other_gages_anis) <- c("x_aniso", "y_aniso")  
   other_gages_anis$stage_cm <- other_gages$stage_cm
   
   
-  wca2a_gages_anis <- as.data.frame(coords.aniso(coords = wca2a_gages[, c("x", "y")], 
+  wca2a_gages_anis <- as.data.frame(coords.aniso(coords = wca2a_gages[, c("x_nad83_utm17n", "y_nad83_utm17n")], 
                                                  aniso.pars = c(350*pi/180, 31/30)))
   colnames(wca2a_gages_anis) <- c("x_aniso", "y_aniso")  
   wca2a_gages_anis$stage_cm <- wca2a_gages$stage_cm
   
   
-  l67ext_gages_anis <- as.data.frame(coords.aniso(coords = l67ext_gages[, c("x", "y")], 
+  l67ext_gages_anis <- as.data.frame(coords.aniso(coords = l67ext_gages[, c("x_nad83_utm17n", "y_nad83_utm17n")], 
                                                   aniso.pars = c(350*pi/180, 31/30)))
   colnames(l67ext_gages_anis) <- c("x_aniso", "y_aniso")  
   l67ext_gages_anis$stage_cm <- l67ext_gages$stage_cm
   
   
-  wca3a_gages_anis <- as.data.frame(coords.aniso(coords = wca3a_gages[, c("x", "y")], 
+  wca3a_gages_anis <- as.data.frame(coords.aniso(coords = wca3a_gages[, c("x_nad83_utm17n", "y_nad83_utm17n")], 
                                                  aniso.pars = c(350*pi/180, 31/30)))
   colnames(wca3a_gages_anis) <- c("x_aniso", "y_aniso")  
   wca3a_gages_anis$stage_cm <- wca3a_gages$stage_cm
   
   ######### PERFORM RBF INTERPOLATION ######### -------------------------------
   print("Running RBF spatial interpolation...")
+  nad_utm <- CRS("+proj=utm +zone=17 +datum=NAD83 +units=m +no_defs +ellps=GRS80 +towgs84=0,0,0")
   
   # convert gage data to spatial-points-dataframe for the RBF interpolation
   coordinates(wca1_gages_anis) <- ~x_aniso + y_aniso
