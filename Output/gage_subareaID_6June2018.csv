@@ -1,0 +1,232 @@
+"Station","EArea","x_nad83_utm17n","y_nad83_utm17n","wca1","wca2a","wca2b","wca3a","wca3b","l67ext","pw","other"
+"pseudo_canal_1","Water Conservation Area 2A",556275.6629,2926307.314,0,1,0,0,0,0,0,0
+"pseudo_canal_2","Water Conservation Area 3A",541504.9126,2865963.443,0,0,0,1,0,0,0,0
+"pseudo_canal_3","Water Conservation Area 3A",540158.1611,2863976.923,0,0,0,1,0,0,0,0
+"pseudo_canal_4","Water Conservation Area 3A",534883.3843,2856196.387,0,0,0,1,0,0,0,0
+"pseudo_canal_5","Water Conservation Area 3A",532645.6821,2851882.511,0,0,0,1,0,0,0,0
+"pS12D_DN","Everglades National Park",532618.1,2849322.8,0,0,0,0,0,0,0,1
+"pNP202NE1","Everglades National Park",532660.8,2840385.2,0,0,0,0,0,1,0,0
+"pBCA19+LO1","Everglades National Park",491389.9,2840932,0,0,0,0,0,0,0,1
+"pNP202NE1","Everglades National Park",532710.8,2840385.2,0,0,0,0,0,1,0,0
+"3A10+","Water Conservation Area 3A",525980.1,2906666.3,0,0,0,1,0,0,0,0
+"3A11+","Water Conservation Area 3A",525605.1,2899897.8,0,0,0,1,0,0,0,0
+"3A12+","Water Conservation Area 3A",532417.2,2894468.1,0,0,0,1,0,0,0,0
+"3AN1W1+","Water Conservation Area 3A",525972.6,2896545.5,0,0,0,1,0,0,0,0
+"3ANE+GW","Water Conservation Area 3A",539459.1,2906638.9,0,0,0,1,0,0,0,0
+"3ANW+GW","Water Conservation Area 3A",521937.2,2905238.3,0,0,0,1,0,0,0,0
+"3AS+","Water Conservation Area 3A",531579.5,2884991.4,0,0,0,1,0,0,0,0
+"3AS3W1+","Water Conservation Area 3A",522955.8,2859933.8,0,0,0,1,0,0,0,0
+"3ASW+","Water Conservation Area 3A",516424.4,2874597,0,0,0,1,0,0,0,1
+"3B-SE+","Water Conservation Area 3B",550178.7,2852319,0,0,0,0,1,0,0,0
+"3BS1W1+","Water Conservation Area 3B",549012.1,2851484.1,0,0,0,0,1,0,0,0
+"A13","Everglades National Park",528887.4,2820049.8,0,0,0,0,0,0,0,1
+"ANGEL.S","Everglades National Park",546009,2833971,0,0,0,0,0,1,0,0
+"BARW4+","Big Cypress National Preserve",465270,2875163,0,0,0,0,0,0,0,1
+"BARW6A+","Big Cypress National Preserve",465524.2,2881398.5,0,0,0,0,0,0,0,1
+"BCA1+","Big Cypress National Preserve",467985.6,2902579.2,0,0,0,0,0,0,0,1
+"BCA10+","Big Cypress National Preserve",497798.6,2843968.9,0,0,0,0,0,0,0,1
+"BCA11+","Big Cypress National Preserve",489974.4,2852339.5,0,0,0,0,0,0,0,1
+"BCA12+","Big Cypress National Preserve",491340.7,2896882.1,0,0,0,0,0,0,0,1
+"BCA13+","Big Cypress National Preserve",494639,2885990.3,0,0,0,0,0,0,0,1
+"BCA14+","Big Cypress National Preserve",469987.9,2880640.3,0,0,0,0,0,0,0,1
+"BCA15+","Big Cypress National Preserve",497325.3,2880093.3,0,0,0,0,0,0,0,1
+"BCA16+","Big Cypress National Preserve",484432.6,2881978.7,0,0,0,0,0,0,0,1
+"BCA17+","Big Cypress National Preserve",483203.5,2898407,0,0,0,0,0,0,0,1
+"BCA18+","Big Cypress National Preserve",501686.1,2898580.7,0,0,0,0,0,0,0,1
+"BCA19+","Big Cypress National Preserve",479719.2,2852793.3,0,0,0,0,0,0,0,1
+"BCA2+","Big Cypress National Preserve",471164.5,2897434.3,0,0,0,0,0,0,0,1
+"BCA20+","Big Cypress National Preserve",506542.1,2843182.1,0,0,0,0,0,0,0,1
+"BCA3+","Big Cypress National Preserve",477845.6,2893052.8,0,0,0,0,0,0,0,1
+"BCA4+","Big Cypress National Preserve",489599.3,2870950.6,0,0,0,0,0,0,0,1
+"BCA5+","Big Cypress National Preserve",507368.8,2872179,0,0,0,0,0,0,0,1
+"BCA9+","Big Cypress National Preserve",508801,2851139,0,0,0,0,0,0,0,1
+"CP","Everglades National Park",529818.8,2790185.1,0,0,0,0,0,0,0,1
+"CR2","Everglades National Park",538016.1,2820226.4,0,0,0,0,0,0,0,1
+"CR3","Everglades National Park",533884.8,2820000,0,0,0,0,0,0,0,1
+"CT27R","Everglades National Park",551472.3,2798370.4,0,0,0,0,0,0,0,1
+"CT50R","Everglades National Park",548223.8,2799681.1,0,0,0,0,0,0,0,1
+"CV5NR","Everglades National Park",551583.5,2798524.7,0,0,0,0,0,0,0,1
+"CY2","Everglades National Park",531919.1,2801262.9,0,0,0,0,0,0,0,1
+"CY3","Everglades National Park",525097.7,2801279.3,0,0,0,0,0,0,0,1
+"DO1","Everglades National Park",531097.1,2806182.4,0,0,0,0,0,0,0,1
+"DO2","Everglades National Park",525727.9,2807985.9,0,0,0,0,0,0,0,1
+"E112","Everglades National Park",539240.7,2811955.6,0,0,0,0,0,0,0,1
+"E146","Everglades National Park",533588.9,2793085.2,0,0,0,0,0,0,0,1
+"EDEN_10","Water Conservation Area 3B",538377.1,2851960.8,0,0,0,0,1,0,0,0
+"EDEN_11","Water Conservation Area 2A",553893.8,2918188.1,0,1,0,0,0,0,0,0
+"EDEN_12","Water Conservation Area 3A",541222.6,2877040.8,0,0,0,1,0,0,0,0
+"EDEN_13","Water Conservation Area 2B",562816.5,2895370,0,0,1,0,0,0,0,0
+"EDEN_14","Water Conservation Area 3A",524254.6,2883397,0,0,0,1,0,0,0,0
+"EDEN_3","Everglades National Park",506727.1,2821669,0,0,0,0,0,0,0,1
+"EDEN_4","Water Conservation Area 3A",549305.2,2886113.3,0,0,0,1,0,0,0,0
+"EDEN_5","Water Conservation Area 3A",524715.5,2889396.6,0,0,0,1,0,0,0,0
+"EDEN_6","Big Cypress National Preserve",509613.3,2882916.5,0,0,0,1,0,0,0,1
+"EDEN_7","Water Conservation Area 3B",550198.5,2870488.9,0,0,0,0,1,0,0,0
+"EDEN_8","Water Conservation Area 3A",532005.4,2860957.1,0,0,0,1,0,0,0,0
+"EDEN_9","Water Conservation Area 3A",540732.7,2900327.2,0,0,0,1,0,0,0,0
+"EP1R","Everglades National Park",555056.9,2796891.8,0,0,0,0,0,0,0,1
+"EPSW","Everglades National Park",549526.8,2795102.7,0,0,0,0,0,0,0,1
+"EVER4","Everglades National Park",545619.8,2802535.1,0,0,0,0,0,0,0,1
+"EVER5A","Everglades National Park",543033.1,2796697.6,0,0,0,0,0,0,0,1
+"EVER6","Everglades National Park",549180.9,2797931.3,0,0,0,0,0,0,0,1
+"EVER7","Everglades National Park",546072.4,2799212.2,0,0,0,0,0,0,0,1
+"EVER8","Everglades National Park",552487.9,2803265.1,0,0,0,0,0,0,0,1
+"G-1251","Everglades National Park",543705.7,2800572.4,0,0,0,0,0,0,0,1
+"G-1488","Pennsuco Wetlands",551887,2855689,0,0,0,0,0,0,1,0
+"G-3272","Everglades National Park",546274.5,2838660,0,0,0,0,0,1,0,0
+"G-3273","Everglades National Park",542575.9,2834820.4,0,0,0,0,0,1,0,0
+"G-3437","Everglades National Park",543483,2827804,0,0,0,0,0,1,0,0
+"G-3567","Pennsuco Wetlands",556509,2864737,0,0,0,0,0,0,1,0
+"G-3574","Everglades National Park",550358,2847691,0,0,0,0,0,1,0,0
+"G-3575","Everglades National Park",550547,2842792,0,0,0,0,0,1,0,0
+"G-3576","Everglades National Park",548717,2847627,0,0,0,0,0,1,0,0
+"G-3577","Everglades National Park",550109,2842845,0,0,0,0,0,1,0,0
+"G-3578","Everglades National Park",548827,2842859,0,0,0,0,0,1,0,0
+"G-3626","Everglades National Park",549068,2833537,0,0,0,0,0,1,0,0
+"G-3628","Everglades National Park",546730,2830818,0,0,0,0,0,1,0,0
+"G-3676","Pennsuco Wetlands",557763,2852293,0,0,0,0,0,0,1,0
+"G-3761","Pennsuco Wetlands",556768,2858275,0,0,0,0,0,0,1,0
+"G-3818","Pennsuco Wetlands",554996.3,2858473.6,0,0,0,0,0,0,1,0
+"G-596","Everglades National Park",548990,2835686,0,0,0,0,0,1,0,0
+"G-620","Everglades National Park",523441.4,2837621.9,0,0,0,0,0,0,0,1
+"G-975","Pennsuco Wetlands",554455.2,2861400,0,0,0,0,0,0,1,0
+"G300-T","L40 Canal",563360.3,2950824,1,0,0,0,0,0,0,0
+"G339-H","L6 Canal",554571.7,2927121.8,0,0,0,0,0,0,0,1
+"G339-T","L6 Canal",554557.9,2927099,0,0,0,0,0,0,0,1
+"Joe_Bay_2E","Coast of Florida Bay",547898,2790715.8,0,0,0,0,0,0,0,1
+"L28S1+","L28 Canal",515715.5,2886100.8,0,0,0,1,0,0,0,1
+"L28S2+","L28 Canal",516521.1,2886101.8,0,0,0,1,0,0,0,1
+"L28GAP+","Big Cypress National Preserve",501659.4,2889475.3,0,0,0,0,0,0,0,1
+"L31W","Everglades National Park",541247.5,2813407.3,0,0,0,0,0,0,0,1
+"LOOP1+T","Big Cypress National Preserve",509241.3,2849228.3,0,0,0,0,0,0,0,1
+"LOOP2+H","Big Cypress National Preserve",504624.7,2847630.7,0,0,0,0,0,0,0,1
+"LOOP2+T","Big Cypress National Preserve",504601.4,2847616.9,0,0,0,0,0,0,0,1
+"MO-214","Everglades National Park",497463.7,2832744.4,0,0,0,0,0,0,0,1
+"MO-215","Everglades National Park",515257.1,2817266.6,0,0,0,0,0,0,0,1
+"MO-216","Big Cypress National Preserve",483516,2845679,0,0,0,0,0,0,0,1
+"McCormick_Creek_at_mouth","Coast of Florida Bay",527034,2783566.3,0,0,0,0,0,0,0,1
+"Mud_Creek_at_mouth","Coast of Florida Bay",541970.3,2787541.3,0,0,0,0,0,0,0,1
+"NCL","Everglades National Park",525730.6,2791837.7,0,0,0,0,0,0,0,1
+"NESRS1","Everglades National Park",536672.9,2841631.5,0,0,0,0,0,1,0,0
+"NESRS2","Everglades National Park",544745.1,2844886.2,0,0,0,0,0,1,0,0
+"NESRS4","Everglades National Park",534848,2836028.3,0,0,0,0,0,1,0,0
+"NMP","Coast of Gulf of Mexico",520328.6,2793072,0,0,0,0,0,0,0,1
+"NORTH_CA1","Water Conservation Area 1",564356.2,2941626.1,1,0,0,0,0,0,0,0
+"NP201","Everglades National Park",528138.1,2844348.3,0,0,0,0,0,0,0,1
+"NP202","Everglades National Park",529238.3,2838291,0,0,0,0,0,1,0,0
+"NP203","Everglades National Park",526235.9,2833947.6,0,0,0,0,0,1,0,0
+"NP205","Everglades National Park",515267.3,2841220.6,0,0,0,0,0,0,0,1
+"NP206","Everglades National Park",532950.6,2825257.5,0,0,0,0,0,1,0,0
+"NP44","Everglades National Park",528120.5,2812973.6,0,0,0,0,0,0,0,1
+"NP46","Everglades National Park",520542.3,2800225.8,0,0,0,0,0,0,0,1
+"NP62","Everglades National Park",521834.9,2813515.6,0,0,0,0,0,0,0,1
+"NP67","Everglades National Park",535189.5,2801486.4,0,0,0,0,0,0,0,1
+"NP72","Everglades National Park",529861.8,2808701.8,0,0,0,0,0,0,0,1
+"NTS1","Everglades National Park",540940.4,2813375.6,0,0,0,0,0,0,0,1
+"NTS10","Everglades National Park",539703.7,2815986.5,0,0,0,0,0,0,0,1
+"NTS14","Everglades National Park",536337.7,2811117,0,0,0,0,0,0,0,1
+"NTS18","Everglades National Park",543576.9,2818613.1,0,0,0,0,0,0,0,1
+"OL","Everglades National Park",538956.7,2794206.9,0,0,0,0,0,0,0,1
+"OT","Everglades National Park",503563.9,2829031.6,0,0,0,0,0,0,0,1
+"P33","Everglades National Park",529891.5,2832971,0,0,0,0,0,1,0,0
+"P34","Everglades National Park",505933.9,2832231.4,0,0,0,0,0,0,0,1
+"P35","Everglades National Park",513620.7,2815873.2,0,0,0,0,0,0,0,1
+"P36","Everglades National Park",520535,2823356.4,0,0,0,0,0,0,0,1
+"P37","Everglades National Park",531371.1,2796463.3,0,0,0,0,0,0,0,1
+"P38","Everglades National Park",516760.9,2805880.2,0,0,0,0,0,0,0,1
+"R127","Everglades National Park",539626.9,2804113.2,0,0,0,0,0,0,0,1
+"R3110","Everglades National Park",537585.7,2814411.6,0,0,0,0,0,0,0,1
+"RG1","Everglades National Park",539384.9,2829396.8,0,0,0,0,0,1,0,0
+"RG2","Everglades National Park",539593,2825091,0,0,0,0,0,1,0,0
+"RG3","Everglades National Park",542685,2825294,0,0,0,0,0,1,0,0
+"S10A_UP","L39 Canal",568592.6,2915744.4,1,0,0,0,0,0,0,0
+"S10A_DN","Water Conservation Area 2A",568563.4,2915633.1,0,1,0,0,0,0,0,0
+"S10C_UP","L39 Canal",564597.9,2917008.9,1,0,0,0,0,0,0,0
+"S10C_DN","Water Conservation Area 2A",564583.9,2916948,0,1,0,0,0,0,0,0
+"S10D_UP","L39 Canal",561683.3,2918858.3,1,0,0,0,0,0,0,0
+"S10D_DN","Water Conservation Area 2A",561635.8,2918827.9,0,1,0,0,0,0,0,0
+"S11A_UP","Water Conservation Area 2A",555115.5,2895405.3,0,1,0,0,0,0,0,0
+"S11A_DN","Water Conservation Area 3A",555030.8,2895390.9,0,0,0,1,0,0,0,0
+"S11B_UP","Water Conservation Area 2A",554557.9,2898235.2,0,1,0,0,0,0,0,0
+"S11B_DN","Water Conservation Area 3A",554456.5,2898221.3,0,0,0,1,0,0,0,0
+"S11C_UP","Water Conservation Area 2A",553950.9,2901225.2,0,1,0,0,0,0,0,0
+"S11C_DN","Water Conservation Area 3A",553853,2901210.4,0,0,0,1,0,0,0,0
+"S12A_UP","Tamiami Canal",517940,2849363.6,0,0,0,1,0,0,0,0
+"S12A_DN","Everglades National Park",517941.2,2849281.2,0,0,0,0,0,0,0,1
+"S12B_UP","Tamiami Canal",523115.6,2849372.2,0,0,0,1,0,0,0,0
+"S12B_DN","Everglades National Park",523113.3,2849299.6,0,0,0,0,0,0,0,1
+"S12C_UP","Tamiami Canal",527382.7,2849386.2,0,0,0,1,0,0,0,0
+"S12C_DN","Everglades National Park",527381.6,2849310.3,0,0,0,0,0,0,0,1
+"S12D_UP","Tamiami Canal",531912.9,2849401.7,0,0,0,1,0,0,0,0
+"S12D_DN","Everglades National Park",531907.9,2849325.5,0,0,0,0,0,0,0,1
+"S140M-H","L28 Canal",517207.4,2894700,0,0,0,1,0,0,0,0
+"S140M-T","Water Conservation Area 3A",517275,2894702.9,0,0,0,1,0,0,0,0
+"S141@H","Water Conservation Area 2B",555755.4,2892486.9,0,0,1,0,0,0,0,0
+"S141@T","L38E Canal",555713,2892496.3,0,0,1,0,0,0,0,0
+"S142-H","Water Conservation Area 3A",555326.9,2893522.7,0,0,0,1,0,0,0,0
+"S142-T","L38E Canal",555489.7,2893543,0,0,1,0,0,0,0,0
+"S143-T","L38E Canal",555136.9,2895305.4,0,0,1,0,0,0,0,0
+"S144+H","Water Conservation Area 2A",560158.7,2900008.9,0,1,0,0,0,0,0,0
+"S144+T","Water Conservation Area 2B",560164.6,2899975.5,0,0,1,0,0,0,0,0
+"S145+H","Water Conservation Area 2A",563348.9,2900416.9,0,1,0,0,0,0,0,0
+"S145+T","Water Conservation Area 2B",563352.1,2900385.7,0,0,1,0,0,0,0,0
+"S146+H","Water Conservation Area 2A",566576.2,2900838.9,0,1,0,0,0,0,0,0
+"S146+T","Water Conservation Area 2B",566581.4,2900799.4,0,0,1,0,0,0,0,0
+"S150M-T","Water Conservation Area 3A",545964.1,2912820.6,0,0,0,1,0,0,0,0
+"S151+H","Miami Canal",549024.3,2877054.8,0,0,0,1,0,0,0,0
+"S175-H","L31W Canal",542862.4,2811294.5,0,0,0,0,0,0,0,1
+"S18C_DN","C111 Canal",547801.3,2800571.6,0,0,0,0,0,0,0,1
+"S190M-T","L28 Interceptor Canal",503213.1,2907051.9,0,0,0,1,0,0,0,0
+"S333-H","Tamiami Canal",532668.1,2849372.8,0,0,0,1,0,0,0,0
+"S333-T","Tamiami Canal",532774.1,2849335.3,0,0,0,1,0,1,0,0
+"S334-H","Tamiami Canal",549864.4,2849342.3,0,0,0,1,0,1,0,0
+"S334-T","Tamiami Canal",549992.4,2849340.4,0,0,0,1,0,0,0,0
+"S343A+H","Water Conservation Area 3A",514522.2,2852358.7,0,0,0,1,0,0,0,0
+"S343A+T","L28 Canal",514478.5,2852324.3,0,0,0,1,0,0,0,0
+"S343B+H","Water Conservation Area 3A",515652,2851135.3,0,0,0,1,0,0,0,0
+"S343B+T","L28 Canal",515620.3,2851105,0,0,0,1,0,0,0,0
+"S344+H","Water Conservation Area 3A",516395.2,2866714.4,0,0,0,1,0,0,0,0
+"S344+T","Big Cypress National Preserve",516353.5,2866724.2,0,0,0,0,0,0,0,1
+"S34-H","L38E Canal",555714.5,2892479.6,0,0,1,0,0,0,0,0
+"S39-H","L39 Canal",570050.1,2915284.6,1,0,0,0,0,0,0,0
+"S7-T","L38E Canal",546248.4,2912887.5,0,1,0,0,0,0,0,0
+"S9A-T","Water Conservation Area 3B",555630.5,2882614.6,0,0,0,0,0,0,0,1
+"SITE_17","Water Conservation Area 2A",558814,2907573.8,0,1,0,0,0,0,0,0
+"SITE_19","Water Conservation Area 2A",569272,2907133.4,0,1,0,0,0,0,0,0
+"SITE_62","Water Conservation Area 3A",524865.2,2895066.7,0,0,0,1,0,0,0,0
+"SITE_63","Water Conservation Area 3A",546872.5,2896696.4,0,0,0,1,0,0,0,0
+"SITE_64","Water Conservation Area 3A",533110,2873028.9,0,0,0,1,0,0,0,0
+"SITE_65","Water Conservation Area 3A",528087.2,2855206.6,0,0,0,1,0,0,0,0
+"SITE_69W","Water Conservation Area 3A",541144.9,2865433.8,0,0,0,1,0,0,0,0
+"SITE_7","Water Conservation Area 1",565061.9,2933415.4,1,0,0,0,0,0,0,0
+"SITE_71","Water Conservation Area 3B",544405.5,2863003.3,0,0,0,0,1,0,0,0
+"SITE_76","Water Conservation Area 3B",551781.7,2876657.8,0,0,0,0,1,0,0,0
+"SITE_8C","Water Conservation Area 1",577474.8,2931309.2,1,0,0,0,0,0,0,0
+"SITE_8T","Water Conservation Area 1",576266.9,2931241.7,1,0,0,0,0,0,0,0
+"SITE_9","Water Conservation Area 1",570077.5,2927288.8,1,0,0,0,0,0,0,0
+"SITE_99","Water Conservation Area 2B",563276.5,2891044,0,0,1,0,0,0,0,0
+"SOUTH_CA1","Water Conservation Area 1",565752.4,2922897.3,1,0,0,0,0,0,0,0
+"SP","Everglades National Park",520390.8,2808007.5,0,0,0,0,0,0,0,1
+"SPARO","Everglades National Park",517147,2846252,0,0,0,0,0,0,0,1
+"SR1","Everglades National Park",518962.8,2806906.2,0,0,0,0,0,0,0,1
+"SRS1","Water Conservation Area 3B",542265.5,2853460.3,0,0,0,0,1,0,0,0
+"Stillwater_Creek","Coast of Florida Bay",551726.7,2790343.3,0,0,0,0,0,0,0,1
+"TI-9","Water Conservation Area 3B",540142,2857718.6,0,0,0,0,1,0,0,0
+"TMC","Everglades National Park",512822.5,2832943.7,0,0,0,0,0,0,0,1
+"TSB","Everglades National Park",539496.7,2809627.6,0,0,0,0,0,0,0,1
+"TSH","Everglades National Park",537180.1,2799430.9,0,0,0,0,0,0,0,1
+"Tamiami_Canal_40-Mile","Big Cypress National Preserve",501948,2859226,0,0,0,0,0,0,0,1
+"Tamiami_Canal_Monroe","Big Cypress National Preserve",473771,2863234,0,0,0,0,0,0,0,1
+"Taylor_River_at_mouth","Coast of Florida Bay",536376.8,2786171.8,0,0,0,0,0,0,0,1
+"Trout_Creek_at_mouth","Coast of Florida Bay",547003.2,2788849.7,0,0,0,0,0,0,0,1
+"Upstream_Taylor_River","Coast of Florida Bay",535475.3,2788445.5,0,0,0,0,0,0,0,1
+"W11","Water Conservation Area 3A",525031.6,2869370.8,0,0,0,1,0,0,0,0
+"W18","Water Conservation Area 3A",522128,2875917.9,0,0,0,1,0,0,0,0
+"W2","Water Conservation Area 3A",519158.3,2853518.6,0,0,0,1,0,0,0,0
+"WC2AN1+","Water Conservation Area 2A",554225.8,2925386.4,0,1,0,0,0,0,0,0
+"WC2AS1+","Water Conservation Area 2A",550618.6,2918999.5,0,1,0,0,0,0,0,0
+"WCA2E4+","Water Conservation Area 2A",564237,2910153.1,0,1,0,0,0,0,0,0
+"WCA2F1+","Water Conservation Area 2A",562878.9,2915714.7,0,1,0,0,0,0,0,0
+"WCA2F4+","Water Conservation Area 2A",561404.8,2910969.9,0,1,0,0,0,0,0,0
+"WCA2U1+","Water Conservation Area 2A",564330.1,2902585.6,0,1,0,0,0,0,0,0
+"West_Highway_Creek","Coast of Florida Bay",555693.2,2791958.5,0,0,0,0,0,0,0,1
