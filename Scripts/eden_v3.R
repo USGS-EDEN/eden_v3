@@ -105,16 +105,15 @@ interpolate_gages <- function(gages, format = "df"){
   gages[gages$Station == "pseudo_canal_5", ]$stage_cm <- round(upper - (slope * 30.14)) #264
   
   # #### ADD 'EArea' VALUE to the pseudo-gages ####
-  # gages[gages$Station == "pseudo_canal_1", ]$EArea <- "Water Conservation Area 2A"
-  # gages[gages$Station == "pseudo_canal_2", ]$EArea <- "Water Conservation Area 3A"
-  # gages[gages$Station == "pseudo_canal_3", ]$EArea <- "Water Conservation Area 3A"
-  # gages[gages$Station == "pseudo_canal_4", ]$EArea <- "Water Conservation Area 3A"
-  # gages[gages$Station == "pseudo_canal_5", ]$EArea <- "Water Conservation Area 3A"
+  gages[gages$Station == "pseudo_canal_1", ]$EArea <- "Water Conservation Area 2A"
+  gages[gages$Station == "pseudo_canal_2", ]$EArea <- "Water Conservation Area 3A"
+  gages[gages$Station == "pseudo_canal_3", ]$EArea <- "Water Conservation Area 3A"
+  gages[gages$Station == "pseudo_canal_4", ]$EArea <- "Water Conservation Area 3A"
+  gages[gages$Station == "pseudo_canal_5", ]$EArea <- "Water Conservation Area 3A"
   
   ## remove gages that don't have measurements for that day....
   no_na_values <- sum(is.na(gages$stage_cm))
-  print("The number of missing gages on this day is: ", no_na_values)
-  print(no_na_values)
+  print(paste0("The number of missing gages on this day is: ", no_na_values))
   gages <- na.omit(gages)
   
   # SORT GAGES INTO SUBZONES --------------------------------------------------
