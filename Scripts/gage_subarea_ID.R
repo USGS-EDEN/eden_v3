@@ -126,6 +126,9 @@ merge_gages[, `Station Used in Surfacing Program?` := NULL]
 colnames(merge_gages)
 colnames(merge_gages)[3:4] <- c("x_nad83_utm17n", "y_nad83_utm17n")
 
+merge_gages$x_nad83_utm17n <- round(merge_gages$x_nad83_utm17n, digits = 1)
+merge_gages$y_nad83_utm17n <- round(merge_gages$y_nad83_utm17n, digits = 1)
+
 # -----------------------------------------------------------------------------
 # Add column for each of the subarea & classify
 # Selection criteria were found in RBFInterpolation.py
