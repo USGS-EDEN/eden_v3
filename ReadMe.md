@@ -19,7 +19,7 @@ EDEN v3 is an attempt to reproduce the EDEN interpolation, currently written in 
 ## Description of ./Output
 
 - **gage\_subareaID\_6June2018:** Created by ./Scripts/gage\_subarea\_ID.R.  Used in eden\_v3.R to assign each gage to an interpolation subarea
-- **gauge\_name\_EArea\_id:** Created by ./Scripts.gauge\_prep.R.  Formerly used to assign each gage to an interpolation subarea.  Now used to create the new subareaID csv. 
+- **gauge\_name\_EArea\_id:** Created by ./Scripts.gauge\_prep.R.  Formerly used to assign each gage to an interpolation subarea.  Now used to create the new subareaID csv.
 
 ## Description of ./GIS/V3\_subzones
 - Shapefiles of the subareas where the independent interpolations are run. 
