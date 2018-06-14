@@ -15,6 +15,7 @@ EDEN v3 is an attempt to reproduce the EDEN interpolation, currently written in 
 - **validation:** Validation of EDEN surface using benchmarks (field measurements)
 - **validation2:** Validation of EDEN surface using 2nd set of benchmarks (field measurements)
 - **werp\_depth:** Find depth using the new DEM from WERP
+- **netCDF_IO_v3.1:** Leonard Pearlstine's (NPS) package for reading & writing netCDF
 
 ## Description of ./Output
 
