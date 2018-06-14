@@ -1,34 +1,52 @@
 #------------------------------------------------------------------------------
-# RUNS A WATER SURFACE INTERPOLATION OVER THE EDEN EXTENT 
+# FXN (1): RUNS A WATER SURFACE INTERPOLATION OVER THE EDEN EXTENT 
 # (referred to as EDEN version 3)
 
-# INPUT of FXN: 
-# dataframe with coordinates (named "X" and "Y") in NAD83 UTM 17N
-# With median water level (stage) in cm for 1 day
-# Column that contains water level must have the word "median" in the name
-# Column that contains the gage names must have "station" in the name
-
-# OUTPUT of FXN:
-# Specify either a dataframe or a RasterLayer object with format argument
-# Options: format ="df" [default], or format = "raster"
+# FXN (2): Creates a NetCDF of water stage from set of median files
+# TODO add functionality for water depth
 
 
+## Function #1: interpolate_gages() ------
+
+  # INPUT: 
+  # dataframe with coordinates (named "X" and "Y") in NAD83 UTM 17N
+  # With median water level (stage) in cm for 1 day
+  # Column that contains water level must have the word "median" in the name
+  # Column that contains the gage names must have "station" in the name
+  
+  # OUTPUT:
+  # Specify either a dataframe or a RasterLayer object with format argument
+  # Options: format ="df" [default], or format = "raster"
+
+## Function #2: eden_nc() -----
+
+  # INPUT:
+  # string vector of file locations for the gage .txt files
+  # path and file name for netCDF
+
+  # OUTPUT: 
+  # nothing within R - function write the netCDF externally
+
+
+# ------------
 # Saira Haider 
 # shaider@usgs.gov
 # Romanach Lab @ Wetland and Aquatic Research Center 
 # US Geological Survey
 #------------------------------------------------------------------------------
 
-print("These libraries must be installed: geospt, raster, rgdal, geoR")
+print("These libraries must be installed: geospt, raster, rgdal, geoR, reshape2, ncdf4")
 
 library(geospt)
 library(raster)
 library(rgdal)
 library(geoR)
+library(reshape2)
+source("./Scripts/netCDF_IO_v3.1.R")
 
-# Import files
+
+# Import gage ID file
 id <- read.csv("./Output/gage_subareaID_6June2018.csv", stringsAsFactors = FALSE)
-  # TODO SHOULD THIS BE INSIDE THE FUNCTION to reduce workspace clutter?
 
 #------------------------------------------------------------------------------
 # Convert subarea grids to anisotropic space outside of the function
@@ -56,9 +74,14 @@ subareas_aniso <- lapply(subareas, function(x) as.data.frame(coords.aniso(coords
 # Change column names
 subareas_aniso <- lapply(subareas_aniso, setNames, c("x_aniso", "y_aniso"))
 
+
 #------------------------------------------------------------------------------
-## Function that runs an radial basis function on the gages
+#------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
+
+## Function #1: Runs a radial basis function on the gages
 ##   to interpolate a water surface over the EDEN extent
+
 
 # TODO: add input parameter to specify interp is for ever4cast bc:
 #   2 gages that have been discontinued from eden surface: WCA2E4 & WCA2F1??
@@ -68,7 +91,7 @@ interpolate_gages <- function(input_gages, format = "df"){
   ## --------------------------------------------------------------------------
   # Add subarea classifications to input gage data
   
-  print("Preparing data...")
+  print("Preparing data for ", input_gages$Date[1])
 
   # Change input station colname to avoid errors caused by identical colnames
   station_index <- grep("Station", colnames(input_gages), ignore.case = TRUE)
@@ -90,7 +113,8 @@ interpolate_gages <- function(input_gages, format = "df"){
   
   # Remove unnecessary columns
   gages <- gages[, c("x_nad83_utm17n", "y_nad83_utm17n", "stage_cm", "Station",
-                     "wca1", "wca2a", "wca2b", "wca3a", "wca3b","l67ext", "pw", "other")]
+                     "wca1", "wca2a", "wca2b", "wca3a", "wca3b","l67ext", "pw", 
+                     "other")]
   
   ## --------------------------------------------------------------------------
   # Add water level values for the 9 'fake' or 'pseudo' gages
@@ -206,3 +230,91 @@ interpolate_gages <- function(input_gages, format = "df"){
   
   return(alt_eden)
 }  
+
+
+## -----------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
+
+# Function #2: Creates a NetCDF of EDEN water stage
+
+eden_nc <- function(file_list, output_file){
+ 
+  # Import gage data
+  gage_list <- lapply(file_list, read.table, sep = "\t", header = TRUE)
+  
+  ## -------------------------------------------------------------------------
+  # Set up netCDF header info 
+  
+  xDim            <- 287
+  yDim            <- 405
+  cell_size       <- 400
+  extent          <- c(463400, 577800, 2951800, 2790200)
+  out_layer       <- "stage"
+  long_layer_name <- "Water Stage (cm)"
+  out_units       <- "cm"
+  out_prec        <- "float"
+  background      <- NaN                         
+  source_name     <- "eden_v3.R"
+  institution     <- "USGS"
+  qaqc            <- "under review"
+  comments        <- "Product derived from RBF interpolation of gages over the EDEN extent"
+  
+  
+  ## --------------------------------------------------------------------------
+  # Set up time series ## 
+  
+  # Get dates from list of files
+  dates <- unlist(lapply(gage_list, function(df) df$Date[1]))
+  dates <- as.Date(as.character(dates), format = "%Y%m%d")
+  # Find first day of the simulations
+  day1 <- min(dates)
+  
+  # Time steps
+  tDim <- length(dates) 
+
+  ## --------------------------------------------------------------------------
+  # Run interpolations & prepare netCDF
+  
+  # Run interpolation for each day
+  interp_list <- lapply(gage_list, interpolate_gages)
+  
+  # Find min and max for netCDF attributes
+  depth_min <- min(unlist(lapply(interp_list, function(df) min(df$stage))))
+  depth_max <- max(unlist(lapply(interp_list, function(df) max(df$stage))))
+
+  nc_out <- createNetCDFfile(out.name = output_file,
+                             layer.name = out_layer,
+                             units = out_units,
+                             prec = out_prec,
+                             long.name = long_layer_name,
+                             daily = TRUE,
+                             extent = extent,
+                             cell.size = cell_size,
+                             fill.value = background,
+                             source.name = source_name,
+                             institution = institution,
+                             qaqc = qaqc,
+                             comments = comments,
+                             start.dateStr = day1, 
+                             t.size = tDim,
+                             layer.min = depth_min,
+                             layer.max = depth_max
+  )
+    
+  # Convert df of interp to a matrix & export as netcdf
+  for(j in 1:tDim){ # j <- 1
+    print(paste("Day ", j, " of ", tDim))
+    
+    dt <- interp_list[[j]]
+    # create matrix for netcdf
+    out_mat <- acast(dt, X_COORD ~ Y_COORD, value.var = out_layer)
+    # rotate matrix
+    out_mat <- t(apply(out_mat, 1, rev)) 
+    
+    vec2nc(nc_out, out_mat, out_layer, j)
+  }
+  
+  closeNetCDF(nc_out) 
+  
+}
