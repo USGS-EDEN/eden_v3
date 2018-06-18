@@ -91,7 +91,7 @@ interpolate_gages <- function(input_gages, format = "df"){
   ## --------------------------------------------------------------------------
   # Add subarea classifications to input gage data
   
-  print("Preparing data for ", input_gages$Date[1])
+  print(paste0("Preparing data for ", input_gages$Date[1]))
 
   # Change input station colname to avoid errors caused by identical colnames
   station_index <- grep("Station", colnames(input_gages), ignore.case = TRUE)

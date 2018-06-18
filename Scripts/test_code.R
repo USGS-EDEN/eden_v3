@@ -8,7 +8,6 @@ source("./Scripts/eden_v3.R")
 eden_gage_files <- list.files("../EDEN/Data/gage_data/2017_q3_DM_v2prov", 
                         pattern = "flag.txt", full.names = TRUE)
 
-
 netcdf_output <- "./Output/Stage/eden_v3_2017q3.nc"
 
 
