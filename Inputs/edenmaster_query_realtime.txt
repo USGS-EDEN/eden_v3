@@ -1,6 +1,3 @@
-# For historical (non-realtime) quarters, select gages within edenmaster_start_num/edenmaster_end_num range
-# q1 = yyyy.0, q2 = yyyy.25, q3 = yyyy.5, q4 = yyyy.75
-
 select database_agency.agency_acronym as database_agency, operating_agency.agency_acronym as operating_agency, station_name, station_name_web, 
 convert_to_navd88_feet, location, station_type, utm_easting, utm_northing, usgs_nwis_agency.agency_acronym as usgs_nwis_agency_code, usgs_nwis_id 
 from usgs_nwis_agency, station_datum, station_information, station_type, location, station 
@@ -9,5 +6,5 @@ left outer join agency as database_agency on station.database_agency_id = databa
 where station.usgs_nwis_agency_id = usgs_nwis_agency.usgs_nwis_agency_id and station.station_id = station_datum.station_id 
 and station.location_id = location.location_id and station.station_id = station_information.station_id 
 and station_type.station_type_id = station_information.station_type_id 
-and station.edenmaster_start_num <= 2017.0 and station.edenmaster_end_num >= 2017.0
+and station.edenmaster_new = 1
 order by database_agency, station_name_web
