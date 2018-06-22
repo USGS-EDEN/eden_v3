@@ -144,6 +144,7 @@ merge_gages[EArea == "Water Conservation Area 1" |
             wca1 := 1]
 
 merge_gages[EArea == "Water Conservation Area 2A" | 
+            EArea == "L6 Canal" |
             Station == "S7-T", 
             wca2a := 1] 
 
@@ -154,15 +155,40 @@ merge_gages[EArea == "Water Conservation Area 2B" |
 
 merge_gages[EArea == "Water Conservation Area 3A" | 
             EArea == "Miami Canal" |
-            EArea == "L28 Canal" |
             EArea == "Tamiami Canal" |
-            EArea == "L28 Interceptor Canal" |
+            Station == "L28S1+" |
+            Station == "L28S2+" |
+            Station == "S140M-H" |
             Station == "EDEN_6",
             wca3a := 1]
 
 merge_gages[EArea == "Water Conservation Area 3B" & 
             Station != "S9A-T", 
             wca3b := 1] 
+
+merge_gages[EArea == "Pennsuco Wetlands", 
+            pw := 1] 
+
+
+# Other has to be done before L67-extension
+merge_gages[rowSums(merge_gages[, 5:11], na.rm = TRUE) < 1, ]$other <- 1
+
+# Add gages to 'other' that are also in WCA3A
+merge_gages[Station == "EDEN_6" |
+            Station == "3ASW+" |
+            Station == "L28S1+" |
+            Station == "L28S2+",
+            other := 1]
+
+# Remove gages from 'other' gages that will be in L67-ext
+# Remove S9A-T because EDEN_V2 doesn't use it
+merge_gages[Station == "NESRS1" |
+            Station == "NESRS2" |
+            Station == "G-3576" |
+            Station == "G-3574" |
+            Station == "S9A-T",
+            other := 0]
+
 
 merge_gages[Station == "NESRS1" | 
             Station == "NESRS2" |
@@ -191,24 +217,12 @@ merge_gages[Station == "NESRS1" |
             Station == "NP203", 
             l67ext := 1]
 
-merge_gages[EArea == "Pennsuco Wetlands", 
-            pw := 1] 
-
-merge_gages[rowSums(merge_gages[, 5:11], na.rm = TRUE) < 1, ]$other <- 1
-
-# Add gages to 'other' that are also in L67ext
-merge_gages[Station == "EDEN_6" |
-            Station == "3ASW+" |
-            Station == "L28S1+" |
-            Station == "L28S2+",
-            other := 1]
-
 # -----------------------------------------------------------------------------
 # Take a look at the file & export
 
 colSums(merge_gages[, 5:12])
 nrow(merge_gages)
 
-write.csv(merge_gages, "./Output/gage_subareaID_6June2018.csv", row.names = FALSE)
+write.csv(merge_gages, "./Output/gage_subareaID_21June2018.csv", row.names = FALSE)
   # Output from 6 June 2018 uses EDEN data downloaded from the website on 28 Feb 2018
-
+  # Output from 21 June 2018 uses EDEN data downloaded from the website on 28 Feb 2018
