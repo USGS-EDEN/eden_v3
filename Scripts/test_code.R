@@ -2,7 +2,7 @@
 setwd("~/Desktop/eden_V3")
 dir <- getwd()
 
-source("./Scripts/eden_v3.R")
+source("./Scripts/eden_v3b.R")
 
 ## For testing eden_v3::eden_nc()
 
