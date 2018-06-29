@@ -47,9 +47,6 @@ library(RMySQL)
 source("./Scripts/netCDF_IO_v3.1.R")
 
 
-# Import gage ID file
-id <- read.csv("./Output/gage_subareaID_6June2018.csv", stringsAsFactors = FALSE)
-
 #------------------------------------------------------------------------------
 # Convert subarea grids to anisotropic space outside of the function
 # This speeds up how long it takes to run the function
@@ -76,6 +73,11 @@ subareas_aniso <- lapply(subareas, function(x) as.data.frame(coords.aniso(coords
 # Change column names
 subareas_aniso <- lapply(subareas_aniso, setNames, c("x_aniso", "y_aniso"))
 
+# Connect to database
+usr <- "edenweb"
+pword <- "edenweb"
+con <- dbConnect(MySQL(), user = usr, password = pword, dbname = "eden_new", host = "stpweb1-dmz.er.usgs.gov")
+
 
 #------------------------------------------------------------------------------
 #------------------------------------------------------------------------------
@@ -89,6 +91,9 @@ subareas_aniso <- lapply(subareas_aniso, setNames, c("x_aniso", "y_aniso"))
 #   2 gages that have been discontinued from eden surface: WCA2E4 & WCA2F1??
 
 interpolate_gages <- function(input_gages, format = "df"){
+  
+  # Import pseudogage ID file
+  id <- read.csv("./Output/edenmaster.csv", stringsAsFactors = FALSE)
   
   ## --------------------------------------------------------------------------
   # Add subarea classifications to input gage data
@@ -260,29 +265,38 @@ eden_nc <- function(date_range, files_database, output_file){
   comments        <- "Product derived from RBF interpolation of gages over the EDEN extent"
   
   if (files_database == "database") {
-    # Connect to database and download data file
-    usr <- "edenweb"
-    pword <- "edenweb"
-    con <- dbConnect(MySQL(), user = usr, password = pword, dbname = "eden_new", host = "stpweb1-dmz.er.usgs.gov")
-    
     # Current quarter
     cur_qtr <- paste0(as.POSIXlt(Sys.Date())$year + 1900, quarters(Sys.Date()))
     # Surface creation quarter
     surf_qtr <- paste0(as.POSIXlt(date_range[1])$year + 1900, quarters(date_range[1]))
     
-    if (cur_qtr == surf_qtr)
+    gage_query <- "select station_name, station_name_web, agency_acronym as agency, utm_easting, utm_northing, dry_elevation, convert_to_navd88_feet as conv, location, area from station, agency, station_datum, location where station.database_agency_id = agency.agency_id and station.station_id = station_datum.station_id and station.location_id = location.location_id and"
+    if (cur_qtr == surf_qtr) {
       # List of expected upload gages from EDENdb, realtime
-      gages <- dbGetQuery(con, "select station_name, station_name_web, agency_acronym as agency, utm_easting, utm_northing, dry_elevation, convert_to_navd88_feet as conv from station, agency, station_datum where station.database_agency_id = agency.agency_id and station.station_id = station_datum.station_id and edenmaster_new = 1 group by station_name order by agency, station_name_web")
-    # List of expected upload gages from EDENdb, historic
-    else {
+      gage_query = paste(gage_query, "edenmaster_new = 1")
+    } else {
+      # List of expected upload gages from EDENdb, historic
       surf_qtr_strt <- as.POSIXlt(date_range[1])$year + 1900 + as.numeric(substr(quarters(date_range[1]), 2, 2)) / 4
       surf_qtr_end <- as.POSIXlt(date_range[1])$year + 1900 + as.numeric(substr(quarters(rev(date_range)[1]), 2, 2)) / 4
-      gages <- dbGetQuery(con, paste0("select station_name, station_name_web, agency_acronym as agency, utm_easting, utm_northing, dry_elevation, convert_to_navd88_feet as conv from station, agency, station_datum where station.database_agency_id = agency.agency_id and station.station_id = station_datum.station_id and station.edenmaster_start_num <= ", surf_qtr_strt, " and station.edenmaster_end_num >= ", surf_qtr_end, " group by station_name order by agency, station_name_web"))
+      gage_query <- paste(gage_query, "station.edenmaster_start_num <=", surf_qtr_strt, "and station.edenmaster_end_num >=", surf_qtr_end)
     }
+    gage_query <- paste(gage_query, "group by station_name order by agency, station_name_web")
+    gages <- dbGetQuery(con, gage_query)
     gages$agency[which(gages$agency == "ENP")] <- "NPS"
     # Default dry values for gages missing them
     gages$dry_elevation[which(is.na(gages$dry_elevation))] <- -9999
     
+    # Create edenmaster file
+    master <- read.csv("./Output/pseudogage_subareaID.csv", stringsAsFactors = FALSE)
+    for (i in 1:dim(gages)[1]) {
+      bits <- rev(unlist(strsplit(substr(paste(as.integer(intToBits(gages$area[i])), collapse = ""), 1, 8), "")))
+      row <- c(gages$station_name[i], gages$location[i], gages$utm_easting[i], gages$utm_northing[i], bits)
+      master <- rbind(master, row)
+    }
+    write.csv(master, "./Output/edenmaster.csv", quote = F, row.names = F)
+    
+    # Clean input directory
+    unlink("./Inputs/gage_data/*")
     # Loop by dates to generate annotated daily median flag files
     for (j in 1:length(date_range)) {
       text <- "Agency	Station	X	Y	Daily Median Water Level (cm, NAVD88)	Date	Data Type"
