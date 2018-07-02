@@ -99,7 +99,8 @@ interpolate_gages <- function(input_gages, format = "df", edenmaster = "gage_sub
   # Add subarea classifications to input gage data
   
   print(paste0("Preparing data for ", input_gages$Date[1]))
-
+  print(paste0("using edenmaster ", edenmaster))
+  
   # Change input station colname to avoid errors caused by identical colnames
   station_index <- grep("Station", colnames(input_gages), ignore.case = TRUE)
   colnames(input_gages)[station_index] <- "input_station_name"
@@ -290,7 +291,7 @@ eden_nc <- function(date_range, files_database, output_file){
     master <- read.csv("./Output/pseudogage_subareaID.csv", stringsAsFactors = FALSE)
     for (i in 1:dim(gages)[1]) {
       bits <- rev(unlist(strsplit(substr(paste(as.integer(intToBits(gages$area[i])), collapse = ""), 1, 8), "")))
-      row <- c(gages$station_name[i], gages$location[i], gages$utm_easting[i], gages$utm_northing[i], bits)
+      row <- c(gages$station_name[i], gages$location[i], round(gages$utm_easting[i], digits = 1), round(gages$utm_northing[i], digits = 1), bits)
       master <- rbind(master, row)
     }
     write.csv(master, "./Output/edenmaster.csv", quote = F, row.names = F)
