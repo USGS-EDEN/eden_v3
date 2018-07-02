@@ -90,10 +90,10 @@ con <- dbConnect(MySQL(), user = usr, password = pword, dbname = "eden_new", hos
 # TODO: add input parameter to specify interp is for ever4cast bc:
 #   2 gages that have been discontinued from eden surface: WCA2E4 & WCA2F1??
 
-interpolate_gages <- function(input_gages, format = "df"){
+interpolate_gages <- function(input_gages, format = "df", edenmaster = "gage_subareaID_21June2018.csv"){
   
   # Import pseudogage ID file
-  id <- read.csv("./Output/edenmaster.csv", stringsAsFactors = FALSE)
+  id <- read.csv(paste0("./Output/", edenmaster), stringsAsFactors = FALSE)
   
   ## --------------------------------------------------------------------------
   # Add subarea classifications to input gage data
@@ -333,7 +333,7 @@ eden_nc <- function(date_range, files_database, output_file){
   # Run interpolations & prepare netCDF
   
   # Run interpolation for each day
-  interp_list <- lapply(gage_list, interpolate_gages)
+  interp_list <- lapply(gage_list, interpolate_gages, edenmaster = "edenmaster.csv")
   
   # Find min and max for netCDF attributes
   depth_min <- min(unlist(lapply(interp_list, function(df) min(df$stage))))
