@@ -207,7 +207,7 @@ interpolate_gages <- function(input_gages, format = "df", edenmaster = "gage_sub
                     newdata = subareas_aniso[[subarea_index]]) 
     
     # Final clean up
-    subarea_rbf <- cbind(subareas[[subarea_index]], round(subarea_rbf$var1.pred))
+    subarea_rbf <- cbind(subareas[[subarea_index]], subarea_rbf$var1.pred)
     colnames(subarea_rbf)[3] <- "stage"
     
     return(subarea_rbf)
@@ -248,23 +248,6 @@ interpolate_gages <- function(input_gages, format = "df", edenmaster = "gage_sub
 
 eden_nc <- function(date_range, files_database, output_file){
  
-  ## -------------------------------------------------------------------------
-  # Set up netCDF header info 
-  
-  xDim            <- 287
-  yDim            <- 405
-  cell_size       <- 400
-  extent          <- c(463400, 577800, 2951800, 2790200)
-  out_layer       <- "stage"
-  long_layer_name <- "Water Stage (cm)"
-  out_units       <- "cm"
-  out_prec        <- "float"
-  background      <- NaN                         
-  source_name     <- "eden_v3.R"
-  institution     <- "USGS"
-  qaqc            <- "under review"
-  comments        <- "Product derived from RBF interpolation of gages over the EDEN extent"
-  
   if (files_database == "database") {
     # Current quarter
     cur_qtr <- paste0(as.POSIXlt(Sys.Date())$year + 1900, quarters(Sys.Date()))
@@ -340,6 +323,23 @@ eden_nc <- function(date_range, files_database, output_file){
   depth_min <- min(unlist(lapply(interp_list, function(df) min(df$stage))))
   depth_max <- max(unlist(lapply(interp_list, function(df) max(df$stage))))
 
+  ## -------------------------------------------------------------------------
+  # Set up netCDF header info 
+  
+  xDim            <- 287
+  yDim            <- 405
+  cell_size       <- 400
+  extent          <- c(463400, 577800, 2951800, 2790200)
+  out_layer       <- "stage"
+  long_layer_name <- "Water Stage (cm)"
+  out_units       <- "cm"
+  out_prec        <- "float"
+  background      <- NaN                         
+  source_name     <- "eden_v3.R"
+  institution     <- "USGS"
+  qaqc            <- "under review"
+  comments        <- "Product derived from RBF interpolation of gages over the EDEN extent"
+  
   nc_out <- createNetCDFfile(out.name = output_file,
                              layer.name = out_layer,
                              units = out_units,
