@@ -17,3 +17,20 @@ netcdf_output <- "./Output/Stage/eden_2018q3.nc"
 
 eden_nc(dt, "database", netcdf_output)
 
+
+stage.nc<-nc_open("~/Desktop/eden_V3/Output/Stage/eden_2018q3c.nc")
+x<-ncvar_get(stage.nc,"x")
+y<-ncvar_get(stage.nc,"y")
+new<-ncvar_get(stage.nc,"stage")
+nc_close(stage.nc)
+stage.nc<-nc_open("~/Downloads/2018_q3_v2rt.nc")
+old<-ncvar_get(stage.nc,"stage")
+nc_close(stage.nc)
+
+new <- new[,405:1]
+par(mfrow = c(2, 2))
+image(new, main = "EDEN V3", xaxt = "n", yaxt = "n")
+image(old, main = "EDEN V2", xaxt = "n", yaxt = "n")
+diff<-new-old
+range(diff, na.rm=T)
+image(diff, main = "EDEN V3 - V2", xaxt = "n", yaxt = "n")
