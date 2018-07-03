@@ -15,10 +15,10 @@ dt <- seq(as.Date("2018-07-01"), as.Date("2018-07-01"), "days")
 netcdf_output <- "./Output/Stage/eden_2018q3.nc"
 
 
-eden_nc(dt, "database", netcdf_output)
+eden_nc(dt, netcdf_output, "database")
 
 
-stage.nc<-nc_open("~/Desktop/eden_V3/Output/Stage/eden_2018q3c.nc")
+stage.nc<-nc_open(netcdf_output)
 x<-ncvar_get(stage.nc,"x")
 y<-ncvar_get(stage.nc,"y")
 new<-ncvar_get(stage.nc,"stage")

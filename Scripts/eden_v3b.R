@@ -22,8 +22,8 @@
 
   # INPUT:
   # date vector of surfaces to be produced; should be single quarter, at most (or, if known, period of constant edenmaster gages)
-  # character flag "files" vs "database"
   # path and file name for netCDF
+  # character flag "files" vs "database"; files defaults
 
   # OUTPUT: 
   # nothing within R - function write the netCDF externally
@@ -246,7 +246,7 @@ interpolate_gages <- function(input_gages, format = "df", edenmaster = "gage_sub
 
 # Function #2: Creates a NetCDF of EDEN water stage
 
-eden_nc <- function(date_range, files_database, output_file){
+eden_nc <- function(date_range, output_file, files_database = "files"){
  
   if (files_database == "database") {
     # Current quarter
