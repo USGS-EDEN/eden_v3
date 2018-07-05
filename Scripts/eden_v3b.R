@@ -78,6 +78,32 @@ usr <- "edenweb"
 pword <- "edenweb"
 con <- dbConnect(MySQL(), user = usr, password = pword, dbname = "eden_new", host = "stpweb1-dmz.er.usgs.gov")
 
+# Function that takes gages from a subarea and runs the RBF function
+run_eden_rbf <- function(subarea_df, n_neigh, subarea_name){
+  # subarea_df <- wca1_gages; n_neigh = 8; subarea_name <- 'wca1'
+  
+  subarea_index <- grep(subarea_name, names(subareas_aniso))
+  
+  # Convert df to SpatialPoints df
+  coordinates(subarea_df) <- ~x_aniso + y_aniso
+  proj4string(subarea_df) <- CRS("+proj=utm +zone=17 +datum=NAD83 +units=m +no_defs +ellps=GRS80 +towgs84=0,0,0")
+  
+  # Run RBF
+  subarea_rbf <- rbf(stage_cm ~ x_aniso + y_aniso, 
+                     data = subarea_df, 
+                     func = "M", 
+                     eta = 0, 
+                     rho = 0, 
+                     n.neigh = n_neigh, 
+                     newdata = subareas_aniso[[subarea_index]]) 
+  
+  # Final clean up
+  subarea_rbf <- cbind(subareas[[subarea_index]], subarea_rbf$var1.pred)
+  colnames(subarea_rbf)[3] <- "stage"
+  
+  return(subarea_rbf)
+}
+
 
 #------------------------------------------------------------------------------
 #------------------------------------------------------------------------------
@@ -161,7 +187,7 @@ interpolate_gages <- function(input_gages, format = "df", edenmaster = "gage_sub
   ## Remove gages that don't have measurements for that day
   no_na_values <- sum(is.na(gages$stage_cm))
   print(paste0("The number of missing gages on this day is: ", no_na_values))
-  print(paste0("Missing data are from gage stations: ", gages[is.na(gages$stage_cm), ]$Station))
+  if (no_na_values) print(paste0("Missing data are from gage stations: ", gages[is.na(gages$stage_cm), ]$Station))
   gages <- na.omit(gages)
 
   ## --------------------------------------------------------------------------
@@ -187,32 +213,6 @@ interpolate_gages <- function(input_gages, format = "df", edenmaster = "gage_sub
   ## --------------------------------------------------------------------------
   print("Running RBF interpolation...")
   
-  # Function that takes gages from a subarea and runs the RBF function
-  run_eden_rbf <- function(subarea_df, n_neigh, subarea_name){
-    # subarea_df <- wca1_gages; n_neigh = 8; subarea_name <- 'wca1'
-    
-    subarea_index <- grep(subarea_name, names(subareas_aniso))
-    
-    # Convert df to SpatialPoints df
-    coordinates(subarea_df) <- ~x_aniso + y_aniso
-    proj4string(subarea_df) <- CRS("+proj=utm +zone=17 +datum=NAD83 +units=m +no_defs +ellps=GRS80 +towgs84=0,0,0")
-    
-    # Run RBF
-    subarea_rbf <- rbf(stage_cm ~ x_aniso + y_aniso, 
-                    data = subarea_df, 
-                    func = "M", 
-                    eta = 0, 
-                    rho = 0, 
-                    n.neigh = n_neigh, 
-                    newdata = subareas_aniso[[subarea_index]]) 
-    
-    # Final clean up
-    subarea_rbf <- cbind(subareas[[subarea_index]], subarea_rbf$var1.pred)
-    colnames(subarea_rbf)[3] <- "stage"
-    
-    return(subarea_rbf)
-  }
-    
   wca1_rbf <- run_eden_rbf(wca1_gages, 8, "wca1")
   wca2a_rbf <- run_eden_rbf(wca2a_gages, 8, "wca2a")
   wca2b_rbf <- run_eden_rbf(wca2b_gages, 8, "wca2b")
