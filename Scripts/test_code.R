@@ -34,7 +34,7 @@ for (i in 1:dim(canal)[1]) {
 
 diff <- v3 - v2
 print(range(diff, na.rm=T))
-bin <- 5
+bin <- 10
 bigdiff <- diff
 bigdiff[bigdiff < bin] <- NA
 for (i in 1:length(dt)) {
@@ -47,8 +47,17 @@ for (i in 1:length(dt)) {
   dev.off()
 }
 
-s <- raster(netcdf_output)
-plot(s)
-t <- raster("~/Downloads/2018_q3_v2rt.nc")
-plot(t)
-plot(s-t)
+for (i in 1:length(dt)) {
+  s <- raster(netcdf_output, i)
+  t <- raster("./Validation/2018_q3_v2rt.nc", i)
+  dif <- s - t
+  bdif <- dif
+  bdif[bdif < bin] <- NA
+  png(filename = paste0("./Validation/", dt[i], "_raster.png"), width = 1200, height = 1700, type = "quartz")
+  par(mfrow = c(2, 2))
+  plot(s, main = "EDEN V3", xaxt = "n", yaxt = "n")
+  plot(t, main = "EDEN V2", xaxt = "n", yaxt = "n")
+  plot(dif, main = "EDEN V3 - V2", xaxt = "n", yaxt = "n")
+  plot(bdif, main = paste0("Difference >", bin, " cm"), xaxt = "n", yaxt = "n")
+  dev.off()
+}
