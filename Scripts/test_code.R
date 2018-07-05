@@ -34,3 +34,9 @@ image(old, main = "EDEN V2", xaxt = "n", yaxt = "n")
 diff<-new-old
 range(diff, na.rm=T)
 image(diff, main = "EDEN V3 - V2", xaxt = "n", yaxt = "n")
+
+s <- raster(netcdf_output)
+plot(s)
+t <- raster("~/Downloads/2018_q3_v2rt.nc")
+plot(t)
+plot(s-t)
