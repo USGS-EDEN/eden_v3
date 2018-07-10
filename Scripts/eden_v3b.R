@@ -155,11 +155,10 @@ interpolate_gages <- function(input_gages, format = "df", edenmaster = "gage_sub
   
   # Add values for the 4 pseudo-gages that were generated from the _Ex files
   # - 2 have the same name
-#  gages[gages$Station == "pBCA19+LO1", ]$stage_cm <- (gages[gages$Station == "BCA19+", ]$stage_cm + gages[gages$Station == "MO-214", ]$stage_cm) / 2
-#  gages[gages$Station == "pNP202NE1", ]$stage_cm <- (gages[gages$Station == "NP202", ]$stage_cm + gages[gages$Station == "NESRS1", ]$stage_cm) / 2
+  gages[gages$Station == "pBCA19+LO1", ]$stage_cm <- (gages[gages$Station == "BCA19+", ]$stage_cm + gages[gages$Station == "MO-214", ]$stage_cm) / 2
+  gages[gages$Station == "pNP202NE1", ]$stage_cm <- (gages[gages$Station == "NP202", ]$stage_cm + gages[gages$Station == "NESRS1", ]$stage_cm) / 2
   gages[gages$Station == "pS12D_DN", ]$stage_cm <- gages[gages$Station == "S12D_DN", ]$stage_cm
-  
-  
+
   # Add water level values for the 5 'pseudo' gages
   # - these are the ones manually determined to increase interpolation accuracy
   # - locations are based on pseudo-canal borders from EDEN_v2
