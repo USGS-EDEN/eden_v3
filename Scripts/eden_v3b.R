@@ -155,8 +155,8 @@ interpolate_gages <- function(input_gages, format = "df", edenmaster = "gage_sub
   
   # Add values for the 4 pseudo-gages that were generated from the _Ex files
   # - 2 have the same name
-  gages[gages$Station == "pBCA19+LO1", ]$stage_cm <- gages[gages$Station == "BCA19+", ]$stage_cm
-  gages[gages$Station == "pNP202NE1", ]$stage_cm <- gages[gages$Station == "NP202", ]$stage_cm
+#  gages[gages$Station == "pBCA19+LO1", ]$stage_cm <- (gages[gages$Station == "BCA19+", ]$stage_cm + gages[gages$Station == "MO-214", ]$stage_cm) / 2
+#  gages[gages$Station == "pNP202NE1", ]$stage_cm <- (gages[gages$Station == "NP202", ]$stage_cm + gages[gages$Station == "NESRS1", ]$stage_cm) / 2
   gages[gages$Station == "pS12D_DN", ]$stage_cm <- gages[gages$Station == "S12D_DN", ]$stage_cm
   
   
@@ -278,13 +278,14 @@ eden_nc <- function(date_range, output_file, files_database = "files"){
       master <- rbind(master, row)
     }
     write.csv(master, "./Output/edenmaster.csv", quote = F, row.names = F)
+    print(paste("edenmaster file generated for", surf_qtr))
     
     # Clean input directory
     unlink("./Inputs/gage_data/*")
     # Loop by dates to generate annotated daily median flag files
     for (j in 1:length(date_range)) {
       text <- "Agency	Station	X	Y	Daily Median Water Level (cm, NAVD88)	Date	Data Type"
-      write.table(text, paste0("./Inputs/gage_data/", format(date_range[j],"%Y%m%d"), "_median_flag.txt"), quote=F, row.names=F, col.names=F, eol="\r\n")
+      write.table(text, paste0("./Inputs/gage_data/", format(date_range[j], "%Y%m%d"), "_median_flag.txt"), quote = F, row.names = F, col.names = F, eol = "\r\n")
       for(i in 1:length(gages$station_name_web)) {
         # Select gage data
         query <- paste0("select datetime, `stage_", gages$station_name_web[i], "`+", gages$conv[i], " as stage, `flag_", gages$station_name_web[i], "` as flag from stage where datetime >= ", format(date_range[j], "%Y%m%d010000"), " and datetime < ", format(date_range[j] + 1, "%Y%m%d000001"), " order by datetime")
@@ -293,8 +294,9 @@ eden_nc <- function(date_range, output_file, files_database = "files"){
         flag <- ifelse(length(which(db$flag == "M")) == 24, "M", ifelse(median(db$stage, na.rm=T) < gages$dry_elevation[i], "D", ifelse(length(which(is.na(db$flag))) > 0, "O", "E")))
         # Calculate medians, generate output text
         text <- c(gages$agency[i], gages$station_name_web[i], round(gages$utm_easting[i], 1), round(gages$utm_northing[i], 1), round(median(db$stage, na.rm=T) * 12 * 2.54), format(date_range[j], "%Y%m%d"), flag)
-        write.table(t(text), paste0("./Inputs/gage_data/", format(date_range[j], "%Y%m%d"), "_median_flag.txt"), sep="\t", quote=F, row.names=F, col.names=F, append=T, eol="\r\n")
+        write.table(t(text), paste0("./Inputs/gage_data/", format(date_range[j], "%Y%m%d"), "_median_flag.txt"), sep = "\t", quote = F, row.names = F, col.names = F, append = T, eol = "\r\n")
       }
+      print(paste("input file generated for", date_range[j]))
     }
   }
 
