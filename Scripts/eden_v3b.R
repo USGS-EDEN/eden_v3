@@ -21,7 +21,8 @@
 ## Function #2: eden_nc() -----
 
   # INPUT:
-  # date vector of surfaces to be produced; should be single quarter, at most (or, if known, period of constant edenmaster gages)
+  # date vector of surfaces to be produced; should be single quarter, at most 
+  #   (or, if known, period of constant edenmaster gages)
   # path and file name for netCDF
   # character flag "files" vs "database"; files defaults
 
@@ -73,12 +74,16 @@ subareas_aniso <- lapply(subareas, function(x) as.data.frame(coords.aniso(coords
 # Change column names
 subareas_aniso <- lapply(subareas_aniso, setNames, c("x_aniso", "y_aniso"))
 
+#------------------------------------------------------------------------------
+
 # Connect to database
 usr <- "edenweb"
 pword <- "edenweb"
 con <- dbConnect(MySQL(), user = usr, password = pword, dbname = "eden_new", host = "stpweb1-dmz.er.usgs.gov")
 
+#------------------------------------------------------------------------------
 # Function that takes gages from a subarea and runs the RBF function
+
 run_eden_rbf <- function(subarea_df, n_neigh, subarea_name){
   # subarea_df <- wca1_gages; n_neigh = 8; subarea_name <- 'wca1'
   
@@ -113,12 +118,9 @@ run_eden_rbf <- function(subarea_df, n_neigh, subarea_name){
 ##   to interpolate a water surface over the EDEN extent
 
 
-# TODO: add input parameter to specify interp is for ever4cast bc:
-#   2 gages that have been discontinued from eden surface: WCA2E4 & WCA2F1??
-
 interpolate_gages <- function(input_gages, format = "df", edenmaster = "gage_subareaID_21June2018.csv"){
   
-  # Import pseudogage ID file
+  # Import gage ID file
   id <- read.csv(paste0("./Output/", edenmaster), stringsAsFactors = FALSE)
   
   ## --------------------------------------------------------------------------
@@ -155,8 +157,10 @@ interpolate_gages <- function(input_gages, format = "df", edenmaster = "gage_sub
   
   # Add values for the 4 pseudo-gages that were generated from the _Ex files
   # - 2 have the same name
-  gages[gages$Station == "pBCA19+LO1", ]$stage_cm <- (gages[gages$Station == "BCA19+", ]$stage_cm + gages[gages$Station == "MO-214", ]$stage_cm) / 2
-  gages[gages$Station == "pNP202NE1", ]$stage_cm <- (gages[gages$Station == "NP202", ]$stage_cm + gages[gages$Station == "NESRS1", ]$stage_cm) / 2
+  gages[gages$Station == "pBCA19+LO1", ]$stage_cm <- (gages[gages$Station == "BCA19+", ]$stage_cm + 
+                                                        gages[gages$Station == "MO-214", ]$stage_cm) / 2
+  gages[gages$Station == "pNP202NE1", ]$stage_cm <- (gages[gages$Station == "NP202", ]$stage_cm + 
+                                                       gages[gages$Station == "NESRS1", ]$stage_cm) / 2
   gages[gages$Station == "pS12D_DN", ]$stage_cm <- gages[gages$Station == "S12D_DN", ]$stage_cm
 
   # Add water level values for the 5 'pseudo' gages
@@ -184,6 +188,7 @@ interpolate_gages <- function(input_gages, format = "df", edenmaster = "gage_sub
   
   ## --------------------------------------------------------------------------
   ## Remove gages that don't have measurements for that day
+  
   no_na_values <- sum(is.na(gages$stage_cm))
   print(paste0("The number of missing gages on this day is: ", no_na_values))
   if (no_na_values) print(paste0("Missing data are from gage stations: ", gages[is.na(gages$stage_cm), ]$Station))
@@ -217,13 +222,12 @@ interpolate_gages <- function(input_gages, format = "df", edenmaster = "gage_sub
   wca2b_rbf <- run_eden_rbf(wca2b_gages, 8, "wca2b")
   wca3a_rbf <- run_eden_rbf(wca3a_gages, 8, "wca3a")
   wca3b_rbf <- run_eden_rbf(wca3b_gages, 8, "wca3b")
-  # TODO when running simulations for ever4cast, n_neigh has to be reduced to 3 - include this in fxn input for specfiying ever4cast
-  pw_rbf <- run_eden_rbf(pw_gages, 5, "pw")
+  pw_rbf <- run_eden_rbf(pw_gages, nrow(pw_gages) - 1, "pw")
   l67ext_rbf <- run_eden_rbf(l67ext_gages, 8, "l67ext")
   other_rbf <- run_eden_rbf(other_gages, 8, "other")
   
   ## --------------------------------------------------------------------------
-  # Bind everything together and conver to raster if specified
+  # Bind everything together and convert to raster if specified
   
   alt_eden <- rbind(wca1_rbf, wca2b_rbf, wca3b_rbf, pw_rbf, other_rbf, wca2a_rbf,
                     l67ext_rbf, wca3a_rbf)
@@ -247,6 +251,9 @@ interpolate_gages <- function(input_gages, format = "df", edenmaster = "gage_sub
 
 eden_nc <- function(date_range, output_file, files_database = "files"){
  
+  ## --------------------------------------------------------------------------
+  # If pulling gage data from the database (files_database = "database"):
+  
   if (files_database == "database") {
     # Current quarter
     cur_qtr <- paste0(as.POSIXlt(Sys.Date())$year + 1900, quarters(Sys.Date()))
@@ -254,6 +261,7 @@ eden_nc <- function(date_range, output_file, files_database = "files"){
     surf_qtr <- paste0(as.POSIXlt(date_range[1])$year + 1900, quarters(date_range[1]))
     
     gage_query <- "select station_name, station_name_web, agency_acronym as agency, utm_easting, utm_northing, dry_elevation, convert_to_navd88_feet as conv, location, area from station, agency, station_datum, location where station.database_agency_id = agency.agency_id and station.station_id = station_datum.station_id and station.location_id = location.location_id and"
+    
     if (cur_qtr == surf_qtr) {
       # List of expected upload gages from EDENdb, realtime
       gage_query = paste(gage_query, "edenmaster_new = 1")
@@ -263,9 +271,11 @@ eden_nc <- function(date_range, output_file, files_database = "files"){
       surf_qtr_end <- as.POSIXlt(date_range[1])$year + 1900 + as.numeric(substr(quarters(rev(date_range)[1]), 2, 2)) / 4
       gage_query <- paste(gage_query, "station.edenmaster_start_num <=", surf_qtr_strt, "and station.edenmaster_end_num >=", surf_qtr_end)
     }
+    
     gage_query <- paste(gage_query, "group by station_name order by agency, station_name_web")
     gages <- dbGetQuery(con, gage_query)
     gages$agency[which(gages$agency == "ENP")] <- "NPS"
+   
     # Default dry values for gages missing them
     gages$dry_elevation[which(is.na(gages$dry_elevation))] <- -9999
     
@@ -276,6 +286,7 @@ eden_nc <- function(date_range, output_file, files_database = "files"){
       row <- c(gages$station_name[i], gages$location[i], round(gages$utm_easting[i], digits = 1), round(gages$utm_northing[i], digits = 1), bits)
       master <- rbind(master, row)
     }
+    
     write.csv(master, "./Output/edenmaster.csv", quote = F, row.names = F)
     print(paste("edenmaster file generated for", surf_qtr))
     
@@ -299,7 +310,11 @@ eden_nc <- function(date_range, output_file, files_database = "files"){
     }
   }
 
-  # if not created from database, these are data downloaded from the EDEN website - the "Daily Median Output File" for 1 quarter
+  ## --------------------------------------------------------------------------
+  # If pulling gage data downloaded from the EDEN website
+  # (the "Daily Median Output File" for 1 quarter)
+  # This is the default setting: files_database = "files"
+  
   file_list <- list.files("./Inputs/gage_data/", pattern = "flag.txt", full.names = TRUE)
   # cull to date range
   file_dates <- as.Date(substr(file_list, 21, 28), format = "%Y%m%d")
@@ -336,7 +351,7 @@ eden_nc <- function(date_range, output_file, files_database = "files"){
   out_units       <- "cm"
   out_prec        <- "float"
   background      <- NaN                         
-  source_name     <- "eden_v3.R"
+  source_name     <- "eden_v3b.R"
   institution     <- "USGS"
   qaqc            <- "under review"
   comments        <- "Product derived from RBF interpolation of gages over the EDEN extent"
