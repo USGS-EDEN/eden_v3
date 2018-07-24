@@ -223,7 +223,7 @@ interpolate_gages <- function(input_gages, format = "df", edenmaster = "gage_sub
   wca2b_rbf <- run_eden_rbf(wca2b_gages, 8, "wca2b")
   wca3a_rbf <- run_eden_rbf(wca3a_gages, 8, "wca3a")
   wca3b_rbf <- run_eden_rbf(wca3b_gages, 8, "wca3b")
-  pw_rbf <- run_eden_rbf(pw_gages, nrow(pw_gages) - 1, "pw")
+  pw_rbf <- run_eden_rbf(pw_gages, nrow(pw_gages), "pw")
   l67ext_rbf <- run_eden_rbf(l67ext_gages, 8, "l67ext")
   other_rbf <- run_eden_rbf(other_gages, 8, "other")
   
