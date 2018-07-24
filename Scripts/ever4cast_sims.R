@@ -9,7 +9,7 @@
 # US Geological Survey
 #-----------------------------------------------------------------------------
 
-source("./Scripts/eden_v3.R")
+source("./Scripts/eden_v3b.R")
 source("../R_library/netCDF_IO_v3.1.R")
 library(reshape2)
 library(data.table)
@@ -20,6 +20,7 @@ library(data.table)
 sim_medians_folder <- "../Ever4Cast/Output/Ever4Cast_app/march2018/spa_central_tendency_20180301_20180831/20180309_spa_central_tendency_20180301_20180831_daily_median_data"
 output_folder <- "../Ever4Cast/Output/EDEN/march2018/netcdfs/"
 output_csv_folder <- "../Ever4Cast/Output/EDEN/march2018/csvs/"
+dem_csv <- "../WERP/Output/werp_dem_400m_cm.csv"
 
 #------------------------------------------------------------------------------
 # Set up netcdf info 
@@ -43,8 +44,7 @@ comments        <- "Product derived from RBF interpolation of water stage over t
 ## Get Data ## ----------------------------------------------------------------
 
 # DEM
-dem <- read.csv("../WERP/Output/werp_dem_400m_cm.csv", 
-                stringsAsFactors = FALSE)
+dem <- read.csv(dem_csv, stringsAsFactors = FALSE)
 
 # List of simulations
 sims <- list.files(sim_medians_folder, full.names = TRUE)
@@ -134,7 +134,7 @@ for(i in 1:length(sims)){              # i <- 1
   closeNetCDF(nc_out) 
 }
 
-stopTime <- proc.time()
-duration <- stopTime - startTime
-duration[3]/60  # Number of minutes
-duration[3]/60/60  # Number of hours
+# stopTime <- proc.time()
+# duration <- stopTime - startTime
+# duration[3]/60  # Number of minutes
+# duration[3]/60/60  # Number of hours
