@@ -118,9 +118,6 @@ run_eden_rbf <- function(subarea_df, n_neigh, subarea_name){
 ##   to interpolate a water surface over the EDEN extent
 
 
-# TODO: add input parameter to specify interp is for ever4cast bc:
-#   2 gages that have been discontinued from eden surface: WCA2E4 & WCA2F1
-
 interpolate_gages <- function(input_gages, format = "df", edenmaster = "gage_subareaID_21June2018.csv"){
   
   # Import gage ID file
@@ -160,8 +157,10 @@ interpolate_gages <- function(input_gages, format = "df", edenmaster = "gage_sub
   
   # Add values for the 4 pseudo-gages that were generated from the _Ex files
   # - 2 have the same name
-#  gages[gages$Station == "pBCA19+LO1", ]$stage_cm <- (gages[gages$Station == "BCA19+", ]$stage_cm + gages[gages$Station == "MO-214", ]$stage_cm) / 2
-#  gages[gages$Station == "pNP202NE1", ]$stage_cm <- (gages[gages$Station == "NP202", ]$stage_cm + gages[gages$Station == "NESRS1", ]$stage_cm) / 2
+  gages[gages$Station == "pBCA19+LO1", ]$stage_cm <- (gages[gages$Station == "BCA19+", ]$stage_cm + 
+                                                        gages[gages$Station == "MO-214", ]$stage_cm) / 2
+  gages[gages$Station == "pNP202NE1", ]$stage_cm <- (gages[gages$Station == "NP202", ]$stage_cm + 
+                                                       gages[gages$Station == "NESRS1", ]$stage_cm) / 2
   gages[gages$Station == "pS12D_DN", ]$stage_cm <- gages[gages$Station == "S12D_DN", ]$stage_cm
   
   
@@ -224,8 +223,7 @@ interpolate_gages <- function(input_gages, format = "df", edenmaster = "gage_sub
   wca2b_rbf <- run_eden_rbf(wca2b_gages, 8, "wca2b")
   wca3a_rbf <- run_eden_rbf(wca3a_gages, 8, "wca3a")
   wca3b_rbf <- run_eden_rbf(wca3b_gages, 8, "wca3b")
-  # TODO when running simulations for ever4cast, n_neigh has to be reduced to 3 - mb include this in fxn input for specfiying ever4cast
-  pw_rbf <- run_eden_rbf(pw_gages, 5, "pw")
+  pw_rbf <- run_eden_rbf(pw_gages, nrow(pw_gages) - 1, "pw")
   l67ext_rbf <- run_eden_rbf(l67ext_gages, 8, "l67ext")
   other_rbf <- run_eden_rbf(other_gages, 8, "other")
   
