@@ -1,12 +1,10 @@
 #------------------------------------------------------------------------------
-# Script for validating altEDEN
+# Script for comparing v3 and v2 eden
 # For the 2nd set of benchmarks given to me by Bryan McCloskey
 
 # Saira Haider 
 # Romanach Lab @ Wetland and Aquatic Research Center 
-# US Geological Survey
-
-# Last update: January 5th, 2018                  
+# US Geological Survey             
 #------------------------------------------------------------------------------
 
 library(sp)
@@ -15,9 +13,9 @@ library(raster)
 #------------------------------------------------------------------------------
 ## Import benchmark data for validation ## ----
 
-bench_locs <- read.csv("../validation2/haider20180105_utm.csv", 
+bench_locs <- read.csv("./Data/Benchmarks/haider20180105_utm.csv", 
                        stringsAsFactors = FALSE)
-bench <- read.csv("../validation2/beerens20171130_omitnull.csv", 
+bench <- read.csv("./Data/Benchmarks/beerens20171130_omitnull.csv", 
                   stringsAsFactors = FALSE)
                        
 ## Add location data to benchmark data
@@ -26,73 +24,73 @@ sort(unique(bench$benchmark))
 
 bench <- merge(bench, bench_locs, by = c("benchmark"))
 bench$date <- as.Date(bench$date, format = "%m/%d/%Y")
-dates <- format(bench$date, format = "%Y%m%d")
+dates <- format(bench$date, format = "%Y-%m-%d")
 
 # convert ft to cm
 bench$stage_cm <- bench$level * 30.48
 
 #------------------------------------------------------------------------------
-## GET ALT-EDEN & REAL EDEN DATA FILES
+## GET V3 and V2 EDEN DATA FILES
+
+## Import v3 surfaces as raster stack ## ----
+v3_files <- list.files("./Data/BryanSaira_testing/edenV3_bryan", pattern = ".nc",
+                       full.names = TRUE)
+v3_stack <- stack(v3_files)
+proj4string(v3_stack) <- CRS("+proj=utm +zone=17 +datum=NAD83 +units=m +no_defs +ellps=GRS80 +towgs84=0,0,0")
+
+## Import the v2 surfaces as raster stack ## ----
+v2_files <- list.files("./Data/BryanSaira_testing/edenV2_netcdfs", pattern = ".nc",
+                       full.names = TRUE)
+v2_stack <- stack(v2_files)
+proj4string(v2_stack) <- CRS("+proj=utm +zone=17 +datum=NAD83 +units=m +no_defs +ellps=GRS80 +towgs84=0,0,0")
 
 
-# Alt-EDEN
-alteden_files_all <- list.files("./output/historical_rasters", recursive = TRUE, 
-                                full.names = TRUE)
-alteden_files <- sapply(dates, grep, x = alteden_files_all, value = TRUE)
-
-
-# EDEN
-eden_files_all <- list.files("../EDEN_surfaces", pattern = ".tif$", 
-                         recursive = TRUE, full.names = TRUE)
-eden_files <- sapply(dates, grep, x = eden_files_all, value = TRUE)
-
+# Get the indices of the raster stacks for the matching benchmark dates
+eden_dates <- as.character(seq.Date(as.Date("2007/04/01"), as.Date("2011/09/30"), by = "day"))
+eden_index <- sapply(dates, grep, x = eden_dates)
 
 #------------------------------------------------------------------------------
-## FIND THE BENCHMARK ERROR WITH ALT-EDEN AND REAL-EDEN
+## FIND THE BENCHMARK ERROR WITH  V3 and V2 EDEN
 
-alt_error <- vector()
-eden_error <- vector()
+v3_error <- vector()
+v2_error <- vector()
 
-for(i in 1:length(dates)){ # i <- 16
+for(i in 1:length(dates)){ # i <- 10
   datum <- bench[i, ]
   coordinates(datum) <- ~POINT_X + POINT_Y
   proj4string(datum) <- CRS("+proj=utm +zone=17 +datum=NAD83 +units=m +no_defs +ellps=GRS80 +towgs84=0,0,0")
 
-  # Get alt EDEN error
-  alt_raster <- raster(alteden_files[i])
-  alt_value <- extract(alt_raster, datum)
-  alt_error[i] <- alt_value - datum$stage_cm
-    
-  # Get real EDEN error
-  eden_raster <- raster(eden_files[i])
-  eden_value <- extract(eden_raster, datum)
-  eden_error[i] <- eden_value - datum$stage_cm
+  # Get v3 error
+  v3_value <- extract(v3_stack[[eden_index[i]]], datum)
+  v3_error[i] <- v3_value - datum$stage_cm
+  
+  # Get v2 error
+  v2_value <- extract(v2_stack[[eden_index[i]]], datum)
+  v2_error[i] <- v2_value - datum$stage_cm
   
 }
-  
-## Look at error in alt & real EDEN ## ----
-alt_error
-eden_error
 
-bench$alt_error <- alt_error
-bench$eden_error <- eden_error
+## Look at error in v3 & v2 EDEN ## ----
+v3_error
+v2_error
 
-summary(alt_error)
-summary(eden_error)
-
-## 3 of the points are outside the EDEN domain, hence the NAs
+summary(v3_error)
+summary(v2_error)
 
 # RMSE
-(alt_rmse <- sqrt(mean(alt_error^2, na.rm = TRUE)))
-(eden_rmse <- sqrt(mean(eden_error^2, na.rm = TRUE)))
+## 3 of the points are outside the EDEN domain, hence the NAs
+# there are 7 measurements at those NAs
+(v3_rmse <- sqrt(mean(v3_error^2, na.rm = TRUE)))
+(v2_rmse <- sqrt(mean(v2_error^2, na.rm = TRUE)))
+
 
 # STANDARD DEVIATION
-(alt_sd <- sd(alt_error, na.rm = TRUE))
-(eden_sd <- sd(eden_error, na.rm = TRUE))
-
-
+(v3_sd <- sd(v3_error, na.rm = TRUE))
+(v2_sd <- sd(v2_error, na.rm = TRUE))
 
 #------------------------------------------------------------------------------
-# EXPORT RESULTS
-
-write.csv(bench, "../validation2/output/validation2.csv", row.names = FALSE)
+# Export
+head(bench)
+bench$v3_minus_bm <- v3_error
+bench$v2_minus_bm <- v2_error
+write.csv(bench, "./Output/benchmarks20171130_error.csv", row.names = FALSE)
