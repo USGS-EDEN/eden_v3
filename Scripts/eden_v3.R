@@ -46,7 +46,7 @@ source("./Scripts/netCDF_IO_v3.1.R")
 
 
 # Import gage ID file
-id <- read.csv("./Output/gage_subareaID_6June2018.csv", stringsAsFactors = FALSE)
+id <- read.csv("./Output/gage_subareaID_21June2018.csv", stringsAsFactors = FALSE)
 
 #------------------------------------------------------------------------------
 # Convert subarea grids to anisotropic space outside of the function
@@ -121,8 +121,8 @@ interpolate_gages <- function(input_gages, format = "df"){
   
   # Add values for the 4 pseudo-gages that were generated from the _Ex files
   # - 2 have the same name
-  gages[gages$Station == "pBCA19+LO1", ]$stage_cm <- gages[gages$Station == "BCA19+", ]$stage_cm
-  gages[gages$Station == "pNP202NE1", ]$stage_cm <- gages[gages$Station == "NP202", ]$stage_cm
+  gages[gages$Station == "pBCA19+LO1", ]$stage_cm <- (gages[gages$Station == "BCA19+", ]$stage_cm + gages[gages$Station == "MO-214", ]$stage_cm) / 2
+  gages[gages$Station == "pNP202NE1", ]$stage_cm <- (gages[gages$Station == "NP202", ]$stage_cm + gages[gages$Station == "NESRS1", ]$stage_cm) / 2
   gages[gages$Station == "pS12D_DN", ]$stage_cm <- gages[gages$Station == "S12D_DN", ]$stage_cm
   
   
@@ -199,7 +199,7 @@ interpolate_gages <- function(input_gages, format = "df"){
                     newdata = subareas_aniso[[subarea_index]]) 
     
     # Final clean up
-    subarea_rbf <- cbind(subareas[[subarea_index]], round(subarea_rbf$var1.pred))
+    subarea_rbf <- cbind(subareas[[subarea_index]], subarea_rbf$var1.pred)
     colnames(subarea_rbf)[3] <- "stage"
     
     return(subarea_rbf)
@@ -211,7 +211,7 @@ interpolate_gages <- function(input_gages, format = "df"){
   wca3a_rbf <- run_eden_rbf(wca3a_gages, 8, "wca3a")
   wca3b_rbf <- run_eden_rbf(wca3b_gages, 8, "wca3b")
   # TODO when running simulations for ever4cast, n_neigh has to be reduced to 3 - include this in fxn input for specfiying ever4cast
-  pw_rbf <- run_eden_rbf(pw_gages, 5, "pw")
+  pw_rbf <- run_eden_rbf(pw_gages, nrow(pw_gages), "pw")
   l67ext_rbf <- run_eden_rbf(l67ext_gages, 8, "l67ext")
   other_rbf <- run_eden_rbf(other_gages, 8, "other")
   
