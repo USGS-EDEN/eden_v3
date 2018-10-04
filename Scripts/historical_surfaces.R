@@ -9,18 +9,18 @@
 # shaider@usgs.gov
 #------------------------------------------------------------------------------
 
-source("./Scripts/eden_v3.R")
+source("./Scripts/eden_v3b.R")
 
 
 ## USER INPUTS ##
 
 gage_data <- "../EDEN/Data/gage_data"
 
-output_csvs <- "./Output/Stage/historical_csvs/"
+#output_csvs <- "./Output/Stage/historical_csvs/"
 output_rasters <- "./Output/Stage/historical_rasters/"
 
-date1 <- "20170101"
-date2 <- "20171231"
+date1 <- "20140401"
+date2 <- "20180330"
 
 #------------------------------------------------------------------------------
 # Read in gauge data
@@ -49,9 +49,8 @@ medians
 #------------------------------------------------------------------------------
 #### RUN INTERPOLATION FUNCTIONS 
 
-
-sink("./Output/historical_surfaces_consolePrint.txt")
-
+Sys.time()
+sink("./Output/Stage/historical_surfaces_consolePrint.txt")
 for(i in 1:length(medians)){    #i <- 1
   
   df <- read.table(medians[i], sep = "\t", header = TRUE)
@@ -74,5 +73,5 @@ for(i in 1:length(medians)){    #i <- 1
   writeRaster(df_raster, raster_file)
   
 }
-
 sink()
+Sys.time()
