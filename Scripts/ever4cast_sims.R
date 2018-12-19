@@ -10,7 +10,7 @@
 #-----------------------------------------------------------------------------
 
 source("./Scripts/eden_v3b.R")
-source("../R_library/netCDF_IO_v3.1.R")
+source("./Scripts/netCDF_IO_v3.1.R")
 library(reshape2)
 library(data.table)
 
@@ -18,9 +18,24 @@ library(data.table)
 # USER INPUTS
 
 sim_medians_folder <- "../Ever4Cast/Output/Ever4Cast_app/march2018/spa_central_tendency_20180301_20180831/20180309_spa_central_tendency_20180301_20180831_daily_median_data"
+if (Sys.getenv("SIM_MEDIANS_FOLDER") != ''){
+	sim_medians_folder <- Sys.getenv("SIM_MEDIANS_FOLDER")
+}
+
 output_folder <- "../Ever4Cast/Output/EDEN/march2018/netcdfs/"
+if (Sys.getenv("OUTPUT_FOLDER") != ''){
+	output_folder <- Sys.getenv("OUTPUT_FOLDER")
+}
+
 output_csv_folder <- "../Ever4Cast/Output/EDEN/march2018/csvs/"
+if (Sys.getenv("OUTPUT_CSV_FOLDER") != ''){
+	output_csv_folder <- Sys.getenv("OUTPUT_CSV_FOLDER")
+}
+
 dem_csv <- "../WERP/Output/werp_dem_400m_cm.csv"
+if (Sys.getenv("DEM_CSV") != ''){
+	dem_csv <- Sys.getenv("DEM_CSV")
+}
 
 #------------------------------------------------------------------------------
 # Set up netcdf info 
