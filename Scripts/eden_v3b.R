@@ -79,7 +79,14 @@ subareas_aniso <- lapply(subareas_aniso, setNames, c("x_aniso", "y_aniso"))
 # Connect to database
 usr <- "edenweb"
 pword <- "edenweb"
-con <- dbConnect(MySQL(), user = usr, password = pword, dbname = "eden_new", host = "stpweb1-dmz.er.usgs.gov")
+skip_db_connection <- FALSE
+if (Sys.getenv("SKIP_DB_CONNECTION") != ''){
+    skip_db_connection <- TRUE
+}
+
+if (!skip_db_connection){
+    con <- dbConnect(MySQL(), user = usr, password = pword, dbname = "eden_new", host = "stpweb1-dmz.er.usgs.gov")
+}
 
 #------------------------------------------------------------------------------
 # Function that takes gages from a subarea and runs the RBF function
