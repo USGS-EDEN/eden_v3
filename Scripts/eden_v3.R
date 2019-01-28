@@ -1,3 +1,7 @@
+## OBSOLETE SCRIPT
+## NOW USING eden_v3b.R
+
+
 #------------------------------------------------------------------------------
 # FXN (1): RUNS A WATER SURFACE INTERPOLATION OVER THE EDEN EXTENT 
 # (referred to as EDEN version 3)
