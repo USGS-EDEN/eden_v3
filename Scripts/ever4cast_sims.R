@@ -32,6 +32,11 @@ if (Sys.getenv("OUTPUT_CSV_FOLDER") != ''){
 	output_csv_folder <- Sys.getenv("OUTPUT_CSV_FOLDER")
 }
 
+enable_output_csv <- FALSE
+if (Sys.getenv("ENABLE_OUTPUT_CSV") != ''){
+    enable_output_csv <- TRUE
+}
+
 dem_csv <- "../WERP/Output/werp_dem_400m_cm.csv"
 if (Sys.getenv("DEM_CSV") != ''){
 	dem_csv <- Sys.getenv("DEM_CSV")
@@ -109,8 +114,10 @@ for(i in 1:length(sims)){              # i <- 1
   depth_max <- max(sim_depth$depth)
   
   # Export depth as csv
-  output_csv_file <- paste0(output_csv_folder, sim_names[i], "_depth", ".csv")
-  fwrite(sim_depth, output_csv_file)
+  if (enable_output_csv){
+    output_csv_file <- paste0(output_csv_folder, sim_names[i], "_depth", ".csv")
+    fwrite(sim_depth, output_csv_file)
+  }
   
   # Write netcdf & export
   output_file <- paste0(output_folder, sim_names[i], ".nc")
@@ -149,7 +156,7 @@ for(i in 1:length(sims)){              # i <- 1
   closeNetCDF(nc_out) 
 }
 
-# stopTime <- proc.time()
-# duration <- stopTime - startTime
-# duration[3]/60  # Number of minutes
-# duration[3]/60/60  # Number of hours
+stopTime <- proc.time()
+duration <- stopTime - startTime
+duration[3]/60  # Number of minutes
+duration[3]/60/60  # Number of hours
