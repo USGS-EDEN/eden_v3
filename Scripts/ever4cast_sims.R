@@ -37,7 +37,6 @@ if (Sys.getenv("ENABLE_OUTPUT_CSV") != ''){
     enable_output_csv <- TRUE
 }
 
-
 dem_csv <- "../WERP/Output/werp_dem_400m_cm.csv"
 if (Sys.getenv("DEM_CSV") != ''){
 	dem_csv <- Sys.getenv("DEM_CSV")
