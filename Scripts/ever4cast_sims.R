@@ -33,7 +33,7 @@ if (Sys.getenv("OUTPUT_CSV_FOLDER") != ''){
 }
 
 enable_output_csv <- FALSE
-if (Sys.getenv("ENABLE_OUTPUT_CSV_ENABLE") != ''){
+if (Sys.getenv("ENABLE_OUTPUT_CSV") != ''){
     enable_output_csv <- TRUE
 }
 
