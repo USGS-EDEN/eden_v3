@@ -10,6 +10,12 @@
 library(sp)
 library(raster)
 
+# folder with V3 stage files
+v3_dir <- "./Output/Stage/EDENv3_nowlround_onepN202"
+
+# output error csv
+output_file <- "./Output/Benchmarks/onepN202_benchmarks20171130_error.csv"
+
 #------------------------------------------------------------------------------
 ## Import benchmark data for validation ## ----
 
@@ -33,17 +39,18 @@ bench$stage_cm <- bench$level * 30.48
 ## GET V3 and V2 EDEN DATA FILES
 
 ## Import v3 surfaces as raster stack ## ----
-v3_files <- list.files("./Data/BryanSaira_testing/edenV3_bryan", pattern = ".nc",
-                       full.names = TRUE)
+v3_files <- list.files(v3_dir, pattern = ".nc", full.names = TRUE)
+# Select NCs from 2007q2 to 2011q3
+v3_files <- v3_files[2:19]
 v3_stack <- stack(v3_files)
 proj4string(v3_stack) <- CRS("+proj=utm +zone=17 +datum=NAD83 +units=m +no_defs +ellps=GRS80 +towgs84=0,0,0")
 
 ## Import the v2 surfaces as raster stack ## ----
-v2_files <- list.files("./Data/BryanSaira_testing/edenV2_netcdfs", pattern = ".nc",
+v2_files <- list.files("./Data/BryanSaira_testing/edenV2_netcdfs", 
+                       pattern = ".nc",
                        full.names = TRUE)
 v2_stack <- stack(v2_files)
 proj4string(v2_stack) <- CRS("+proj=utm +zone=17 +datum=NAD83 +units=m +no_defs +ellps=GRS80 +towgs84=0,0,0")
-
 
 # Get the indices of the raster stacks for the matching benchmark dates
 eden_dates <- as.character(seq.Date(as.Date("2007/04/01"), as.Date("2011/09/30"), by = "day"))
@@ -91,6 +98,6 @@ summary(v2_error)
 #------------------------------------------------------------------------------
 # Export
 head(bench)
-bench$v3_minus_bm <- v3_error
-bench$v2_minus_bm <- v2_error
-write.csv(bench, "./Output/benchmarks20171130_error.csv", row.names = FALSE)
+bench$v3_minus_bm_cm <- v3_error
+bench$v2_minus_bm_cm <- v2_error
+write.csv(bench, output_file, row.names = FALSE)
